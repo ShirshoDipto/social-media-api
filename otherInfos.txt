@@ -1,0 +1,18 @@
+{
+  "user": {
+    "firstName": "Shusme",
+    "lastName": "Islam",
+    "email": "shusmeislam@gmail.com",
+    "password": "$2a$10$6HQTHaVVlcL7X3NqAsSwuOCRiBc/J6KYeaKq55xmebMlsu6s0HTku",
+    "profilePic": "",
+    "coverPic": "",
+    "friends": [],
+    "isAdmin": false,
+    "_id": "642bee86b8292d3f6d3a1ed6",
+    "createdAt": "2023-04-04T09:31:50.892Z",
+    "updatedAt": "2023-04-04T09:31:50.892Z",
+    "__v": 0
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Il9pZCI6IjY0MmJlZTg2YjgyOTJkM2Y2ZDNhMWVkNiIsImZpcnN0TmFtZSI6IlNodXNtZSIsImxhc3ROYW1lIjoiSXNsYW0iLCJlbWFpbCI6InNodXNtZWlzbGFtQGdtYWlsLmNvbSIsInBhc3N3b3JkIjoiJDJhJDEwJDZIUVRIYVZWbGNMN1gzTnFBc1N3dU9DUmlCYy9KNktZZWFLcTU1eG1lYk1sc3U2czBIVGt1In0sImlhdCI6MTY4MDYwMDcxMX0.pOR8gAYg9rJ8oFmFrq8OW2wNkg-RF3XZT3rgaWE6Ieo"
+}
+
