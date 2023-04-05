@@ -100,7 +100,7 @@ exports.updatePost = [
 
       const post = await Post.findById(req.params.postId);
       post.title = req.body.title;
-      post.content = htmlPurify.sanitize(req.body.content);
+      post.content = req.body.content;
 
       const savedPost = await post.save();
 

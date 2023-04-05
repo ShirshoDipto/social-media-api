@@ -26,6 +26,10 @@ router.post("/login", userController.login);
 
 router.post("/signup", userController.signup);
 
+router.get("/login/google", passport.authenticate("google"));
+
+router.get("/oauth2/redirect/google", userController.googleLogin);
+
 /** Post related routes.  */
 router.get("/posts", postController.getAllPosts);
 

@@ -4,19 +4,6 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 
-function generatePlainUserObject(user) {
-  const userOb = {
-    _id: user._id,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    email: user.email,
-    password: user.password,
-    isBlogOwner: user.isBlogOwner,
-  };
-
-  return userOb;
-}
-
 function makeErrorObject(errorArray) {
   const errObj = {};
   errorArray.forEach((err) => {
@@ -28,6 +15,27 @@ function makeErrorObject(errorArray) {
   });
   return errObj;
 }
+
+exports.googleLogin = async (req, res, next) => {
+  passport.authenticate("google", (err, user, info) => {
+    if (err || !user) {
+      return res.status(400).json({
+        error: info.message,
+      });
+    }
+
+    req.login(user, { session: false }, (err) => {
+      if (err) {
+        return next(err);
+      }
+
+      const plainUserObject = new Object(user);
+
+      const token = jwt.sign({ user: plainUserObject }, process.env.JWT_SECRET);
+      return res.json({ user, token });
+    });
+  })(req, res, next);
+};
 
 exports.signup = [
   body("firstName", "First Name must be specified. ")
@@ -81,7 +89,7 @@ exports.signup = [
       });
       await user.save();
 
-      const plainUserObject = generatePlainUserObject(user);
+      const plainUserObject = new Object(user);
 
       const token = jwt.sign({ user: plainUserObject }, process.env.JWT_SECRET);
       return res.json({ user, token });
@@ -123,7 +131,7 @@ exports.login = [
         if (err) {
           return next(err);
         }
-        const plainUserObject = generatePlainUserObject(user);
+        const plainUserObject = new Object(user);
 
         const token = jwt.sign(
           { user: plainUserObject },

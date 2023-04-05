@@ -5,6 +5,19 @@ const ExtractJWT = passportJWT.ExtractJwt;
 const LocalStrategy = require("passport-local").Strategy;
 const bcrypt = require("bcryptjs");
 const User = require("./models/user");
+const GoogleStrategy = require("passport-google-oidc");
+
+passport.serializeUser(function (user, cb) {
+  process.nextTick(function () {
+    cb(null, { id: user.id, username: user.username, name: user.name });
+  });
+});
+
+passport.deserializeUser(function (user, cb) {
+  process.nextTick(function () {
+    return cb(null, user);
+  });
+});
 
 passport.use(
   new LocalStrategy(
@@ -30,7 +43,7 @@ passport.use(
         }
       } catch (err) {
         console.log(err);
-        return cb(err);
+        return cb(err, false, { message: "Some internal error occured." });
       }
     }
   )
@@ -47,8 +60,48 @@ passport.use(
         return cb(null, jwtPayload.user);
       } catch (err) {
         console.log(err);
-        return cb(err);
+        return cb(err, false, { meessage: "Some internal error occured. " });
       }
     }
   )
 );
+
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "/api/oauth2/redirect/google",
+      scope: ["profile", "email"],
+    },
+    async function verify(issuer, profile, cb) {
+      try {
+        const user = await User.findOne({ email: profile.emails[0].value });
+        if (user) {
+          return cb(null, user);
+        }
+
+        const hashedPassword = await bcrypt.hash(profile.id, 10);
+        const newUser = new User({
+          firstName: profile.name.givenName,
+          lastName: profile.name.familyName,
+          email: profile.emails[0].value,
+          password: hashedPassword,
+        });
+
+        const savedUser = await newUser.save();
+        return cb(null, savedUser);
+      } catch (err) {
+        console.log(err);
+        return cb(err, false, { meessage: "Some internal error occured. " });
+      }
+    }
+  )
+);
+
+// {
+//   id: '112222569259052241411',
+//   displayName: 'Muhammad Adhi',
+//   name: { familyName: 'Adhi', givenName: 'Muhammad' },
+//   emails: [ { value: 'mohammadadhi.ma@gmail.com' } ]
+// }
