@@ -77,13 +77,26 @@ async function testLikeCreation() {
   console.log(savedLike);
 }
 
+async function createPosts() {
+  for (let i = 0; i < 100; i++) {
+    const post = new Post({
+      title: `test post ${i}`,
+      content: `test post content ${i}`,
+      author: "642d37499567f4beb0bb06a1",
+    });
+    const savedPost = await post.save();
+    console.log("post created. ");
+  }
+}
+
 async function begin() {
   await connectToMongoDb();
   // await testPostCreation();
   // await testCommentCreation();
   // await testReplyCreation();
-  await testUserCreation();
+  // await testUserCreation();
   // await testLikeCreation();
+  await createPosts();
 }
 
 begin();

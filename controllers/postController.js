@@ -8,8 +8,12 @@ const path = require("path");
 
 exports.getAllPosts = async (req, res, next) => {
   try {
+    const page = req.query.page;
     // newest to oldest
-    const allPosts = await Post.find({}).sort({ $natural: -1 });
+    const allPosts = await Post.find({})
+      .sort({ $natural: -1 })
+      .skip(10 * page)
+      .limit(10);
     res.json({
       user: res.currentUser,
       allPosts,
@@ -116,13 +120,15 @@ exports.updatePost = [
 
 async function deleteAllComments(id) {
   const allComments = await Comment.find({ postId: id });
-  for (let comment of allComments) {
-    await Promise.all([
-      Reply.deleteMany({ commentId: comment._id }),
-      Like.deleteMany({ referenceId: comment._id }),
-      Comment.deleteOne({ _id: comment._id }),
-    ]);
-  }
+  await Promise.all(
+    allComments.map((comment) => {
+      return Promise.all([
+        Reply.deleteMany({ commentId: comment._id }),
+        Like.deleteMany({ referenceId: comment._id }),
+        Comment.deleteOne({ _id: comment._id }),
+      ]);
+    })
+  );
 }
 
 async function deletePostImage(post) {
