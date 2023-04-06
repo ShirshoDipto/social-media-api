@@ -57,7 +57,8 @@ passport.use(
     },
     async function (jwtPayload, cb) {
       try {
-        return cb(null, jwtPayload.user);
+        const user = await User.findOne({ _id: jwtPayload.user._id });
+        return cb(null, user);
       } catch (err) {
         console.log(err);
         return cb(err, false, { meessage: "Some internal error occured. " });

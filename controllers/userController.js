@@ -32,6 +32,7 @@ exports.googleLogin = async (req, res, next) => {
       const plainUserObject = new Object(user);
 
       const token = jwt.sign({ user: plainUserObject }, process.env.JWT_SECRET);
+      console.log({ user, token });
       return res.json({ user, token });
     });
   })(req, res, next);

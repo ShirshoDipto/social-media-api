@@ -33,6 +33,12 @@ router.get("/oauth2/redirect/google", userController.googleLogin);
 /** Post related routes.  */
 router.get("/posts", postController.getAllPosts);
 
+router.get(
+  "/posts/timeline",
+  passport.authenticate("jwt", { session: false }),
+  postController.getTimelinePosts
+);
+
 router.post(
   "/posts",
   upload.single("image"),

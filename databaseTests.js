@@ -78,15 +78,36 @@ async function testLikeCreation() {
 }
 
 async function createPosts() {
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 10; i++) {
     const post = new Post({
-      title: `test post ${i}`,
-      content: `test post content ${i}`,
+      title: `test post ${i} Shusme`,
+      content: `test post content ${i} Shusme`,
+      author: "642bee86b8292d3f6d3a1ed6",
+    });
+    const savedPost = await post.save();
+    console.log("post created. ");
+  }
+
+  for (let i = 0; i < 10; i++) {
+    const post = new Post({
+      title: `test post ${i} Muhammad`,
+      content: `test post content ${i} Muhammad`,
       author: "642d37499567f4beb0bb06a1",
     });
     const savedPost = await post.save();
     console.log("post created. ");
   }
+
+  for (let i = 0; i < 10; i++) {
+    const post = new Post({
+      title: `test post ${i} Shirsho`,
+      content: `test post content ${i} Shirsho`,
+      author: "642d3e86740a32cd0735e69b",
+    });
+    const savedPost = await post.save();
+    console.log("post created. ");
+  }
+  console.log("finish");
 }
 
 async function begin() {

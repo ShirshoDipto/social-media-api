@@ -24,6 +24,30 @@ exports.getAllPosts = async (req, res, next) => {
   }
 };
 
+exports.getTimelinePosts = async (req, res, next) => {
+  try {
+    let page = 0;
+    if (req.query.page) {
+      page = req.query.page;
+    }
+    console.log(req.user);
+    const timelinePosts = await Post.find({
+      author: [req.user._id, ...req.user.friends],
+    })
+      .sort({ $natural: -1 })
+      .skip(page * 10)
+      .limit(10)
+      .populate("author");
+
+    return res.json({
+      posts: timelinePosts,
+      success: "Fetched timeline posts successfully.",
+    });
+  } catch (err) {
+    return next(err);
+  }
+};
+
 exports.createPost = [
   body("title", "Title must be specified. ").trim().isLength({ min: 1 }),
 
@@ -52,11 +76,7 @@ exports.createPost = [
         title: req.body.title,
         content: req.body.content,
         image: imageName,
-        author: {
-          authorId: req.user._id,
-          firstName: req.user.firstName,
-          lastName: req.user.lastName,
-        },
+        author: { authorId: req.user._id },
       });
 
       const savedPost = await post.save();
@@ -96,10 +116,10 @@ exports.updatePost = [
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
       }
-      if (!req.user.isBlogOwner) {
+      if (req.user._id.toString() !== post.author.toString()) {
         return res
           .status(403)
-          .json({ error: "This user is not allowed to update post. " });
+          .json({ error: "You can only update your own post. " });
       }
 
       const post = await Post.findById(req.params.postId);
@@ -139,6 +159,14 @@ async function deletePostImage(post) {
 
 exports.deletePost = async (req, res, next) => {
   try {
+    if (
+      post.author.toString() !== req.user._id.toString() &&
+      !req.user.isAdmin
+    ) {
+      return res
+        .status(403)
+        .json({ error: "You can delete only your own posts. " });
+    }
     const post = await Post.findById(req.params.postId);
     await Promise.all([
       Post.findByIdAndRemove(req.params.postId),
