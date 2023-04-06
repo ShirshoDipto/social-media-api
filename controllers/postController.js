@@ -30,7 +30,6 @@ exports.getTimelinePosts = async (req, res, next) => {
     if (req.query.page) {
       page = req.query.page;
     }
-    console.log(req.user);
     const timelinePosts = await Post.find({
       author: [req.user._id, ...req.user.friends],
     })
@@ -43,6 +42,19 @@ exports.getTimelinePosts = async (req, res, next) => {
       posts: timelinePosts,
       success: "Fetched timeline posts successfully.",
     });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+exports.searchPosts = async (req, res, next) => {
+  try {
+    const searchResult = await Post.find(
+      { $text: { $search: req.body.searchTexts } }, // OR search
+      { score: { $meta: "textScore" } }
+    ).sort({ score: { $meta: "textScore" } });
+
+    res.json({ searchResult });
   } catch (err) {
     return next(err);
   }

@@ -21,7 +21,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-/** Login and Signup routes.  */
+/** User related routes.  */
 router.post("/login", userController.login);
 
 router.post("/signup", userController.signup);
@@ -30,7 +30,12 @@ router.get("/login/google", passport.authenticate("google"));
 
 router.get("/oauth2/redirect/google", userController.googleLogin);
 
+router.get("/search/users", userController.searchUsers);
+
 /** Post related routes.  */
+
+router.get("/search/posts", postController.searchPosts);
+
 router.get("/posts", postController.getAllPosts);
 
 router.get(

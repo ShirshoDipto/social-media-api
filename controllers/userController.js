@@ -144,3 +144,16 @@ exports.login = [
     })(req, res, next);
   },
 ];
+
+exports.searchUsers = async (req, res, next) => {
+  try {
+    const searchResult = await User.find(
+      { $text: { $search: `\"${req.body.searchTexts}\"` } }, // exact search (AND)
+      { score: { $meta: "textScore" } }
+    ).sort({ score: { $meta: "textScore" } });
+
+    return res.json({ searchResult });
+  } catch (err) {
+    return next(err);
+  }
+};
