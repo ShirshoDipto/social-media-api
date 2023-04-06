@@ -17,7 +17,7 @@ mongoose.set("strictQuery", false);
 const mongoDbUri = process.env.MONGODB_URI;
 
 async function connectToMongoDb() {
-  await mongoose.connect(mongoDbUri);
+  await mongoose.connect(mongoDbUri, { autoIndex: false });
   console.log("Database connection successful!!");
 }
 
