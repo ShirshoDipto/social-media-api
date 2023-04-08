@@ -6,6 +6,7 @@ const postController = require("../controllers/postController");
 const commentController = require("../controllers/commentController");
 const replyController = require("../controllers/replyController");
 const likeController = require("../controllers/likeController");
+const friendshipController = require("../controllers/friendshipController");
 const multer = require("multer");
 
 // const upload = multer({ dest: "public/images" });
@@ -31,6 +32,52 @@ router.get("/login/google", passport.authenticate("google"));
 router.get("/oauth2/redirect/google", userController.googleLogin);
 
 router.get("/search/users", userController.searchUsers);
+
+// router.get("/users/:userId", userController.getSingleUser);
+
+// router.put(
+//   "/users/:userId",
+//   passport.authenticate("jwt", { session: false }),
+//   userController.updateAccount
+// );
+
+// router.delete(
+//   "/users/:userId",
+//   passport.authenticate("jwt", { session: false }),
+//   userController.deleteAccount
+// );
+
+router.put(
+  "/users/:userId/friends/:friendId",
+  passport.authenticate("jwt", { session: false }),
+  userController.removeFromFriendlist
+);
+
+/** friendship related routes */
+
+router.get(
+  "/users/:userId/friendships",
+  passport.authenticate("jwt", { session: false }),
+  friendshipController.getFriendshipStatus
+);
+
+router.post(
+  "/users/:userId/friendships",
+  passport.authenticate("jwt", { session: false }),
+  friendshipController.sendFriendRequest
+);
+
+router.put(
+  "/users/:userId/friendships/:friendshipId",
+  passport.authenticate("jwt", { session: false }),
+  friendshipController.acceptFriendRequest
+);
+
+router.delete(
+  "/users/:userId/friendships/:friendshipId",
+  passport.authenticate("jwt", { session: false }),
+  friendshipController.rejectFriendRequest
+);
 
 /** Post related routes.  */
 

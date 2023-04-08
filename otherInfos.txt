@@ -55,6 +55,26 @@
   token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Il9pZCI6IjY0MmQzNzQ5OTU2N2Y0YmViMGJiMDZhMSIsImZpcnN0TmFtZSI6Ik11aGFtbWFkIiwibGFzdE5hbWUiOiJBZGhpIiwiZW1haWwiOiJtb2hhbW1hZGFkaGkubWFAZ21haWwuY29tIiwicGFzc3dvcmQiOiIkMmEkMTAkQjc0VjFKYTNtZUQyVVFrM0FOd1BZT1JtcHRMcXpmVDRRdndGTTcuWDZsR1dVY3dLNGc3a3kiLCJwcm9maWxlUGljIjoiIiwiY292ZXJQaWMiOiIiLCJmcmllbmRzIjpbXSwiaXNBZG1pbiI6ZmFsc2UsImNyZWF0ZWRBdCI6IjIwMjMtMDQtMDVUMDg6NTQ6MzMuMjE5WiIsInVwZGF0ZWRBdCI6IjIwMjMtMDQtMDVUMDg6NTQ6MzMuMjE5WiIsIl9fdiI6MH0sImlhdCI6MTY4MDc1ODk3MX0.c4MYttBjWo8xTF2jw5VATxEqegx9Qf36_anDRRoiiwE'
 }
 
+{
+  "user": {
+    "firstName": "Sultan",
+    "lastName": "Kutta",
+    "email": "sultankutta@gmail.com",
+    "password": "$2a$10$72NmuFNRLv.5XAbqyR12QeEKxpUJHi7n0qiHPqWFTxi.LUFOi1ufC",
+    "profilePic": "",
+    "coverPic": "",
+    "friends": [],
+    "isAdmin": false,
+    "_id": "64313de0fd012351228174cc",
+    "notifications": [],
+    "requests": [],
+    "createdAt": "2023-04-08T10:11:44.190Z",
+    "updatedAt": "2023-04-08T10:11:44.190Z",
+    "__v": 0
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImZpcnN0TmFtZSI6IlN1bHRhbiIsImxhc3ROYW1lIjoiS3V0dGEiLCJlbWFpbCI6InN1bHRhbmt1dHRhQGdtYWlsLmNvbSIsInBhc3N3b3JkIjoiJDJhJDEwJDcyTm11Rk5STHYuNVhBYnF5UjEyUWVFS3hwVUpIaTduMHFpSFBxV0ZUeGkuTFVGT2kxdWZDIiwicHJvZmlsZVBpYyI6IiIsImNvdmVyUGljIjoiIiwiZnJpZW5kcyI6W10sImlzQWRtaW4iOmZhbHNlLCJfaWQiOiI2NDMxM2RlMGZkMDEyMzUxMjI4MTc0Y2MiLCJub3RpZmljYXRpb25zIjpbXSwicmVxdWVzdHMiOltdLCJjcmVhdGVkQXQiOiIyMDIzLTA0LTA4VDEwOjExOjQ0LjE5MFoiLCJ1cGRhdGVkQXQiOiIyMDIzLTA0LTA4VDEwOjExOjQ0LjE5MFoiLCJfX3YiOjB9LCJpYXQiOjE2ODA5NDg3MDR9.ZjdyNQ1-6JJQ5PW6vL4dKmoX-fsXkBemmAY0iElIb84"
+}
+
 
 
 

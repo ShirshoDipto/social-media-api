@@ -10,7 +10,7 @@ const UserSchema = new Schema(
     password: { type: String, required: true },
     profilePic: { type: String, default: "" },
     coverPic: { type: String, default: "" },
-    friends: [{ type: Schema.Types.ObjectId, ref: "FriendShip" }],
+    friends: [{ type: Schema.Types.ObjectId, ref: "User" }],
     isAdmin: {
       type: Boolean,
       default: false,
@@ -31,6 +31,12 @@ const UserSchema = new Schema(
       type: Number,
       enum: [1, 2, 3],
     },
+    notifications: [
+      {
+        description: { type: String },
+        type: { type: Number }, // 0 = new friend req, 1 = rejected req, 2 = accepted req
+      },
+    ],
   },
   { timestamps: true }
 );

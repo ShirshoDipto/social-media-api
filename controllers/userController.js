@@ -3,6 +3,7 @@ const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
+const Friendship = require("../models/friendship");
 
 function makeErrorObject(errorArray) {
   const errObj = {};
@@ -153,6 +154,41 @@ exports.searchUsers = async (req, res, next) => {
     ).sort({ score: { $meta: "textScore" } });
 
     return res.json({ searchResult });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+exports.removeFromFriendlist = async (req, res, next) => {
+  try {
+    const friendship = await Friendship.findOne({
+      $or: [
+        {
+          $and: [
+            { requester: req.user._id },
+            { recipient: req.params.friendId },
+          ],
+        },
+        {
+          $and: [
+            { requester: req.params.friendId },
+            { recipient: req.user._id },
+          ],
+        },
+      ],
+    });
+
+    const friend = await User.findById(req.params.friendId);
+
+    await Promise.all([
+      friend.updateOne({ $pull: { friends: req.user._id } }),
+      req.user.updateOne({ $pull: { friends: req.params.friendId } }),
+      Friendship.deleteOne({ _id: friendship._id }),
+    ]);
+
+    return res.json({
+      success: "Removed friend from the friend list successfully. ",
+    });
   } catch (err) {
     return next(err);
   }

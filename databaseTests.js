@@ -4,6 +4,7 @@ const Comment = require("./models/comment");
 const Like = require("./models/like");
 const Reply = require("./models/reply");
 const User = require("./models/user");
+const Friendship = require("./models/friendship");
 // const Post = require("./models/post");
 // const Post = require("./models/post");
 require("dotenv").config();
@@ -110,6 +111,19 @@ async function createPosts() {
   console.log("finish");
 }
 
+async function createAFriendship(user1, user2) {
+  const id1 = user1.slice(0, user1.length / 2);
+  const id2 = user2.slice(user2.length / 2 - 1);
+  const friendship = new Friendship({
+    requester: user1,
+    recipient: user2,
+    status: 0,
+  });
+
+  const savedFriendship = await friendship.save();
+  console.log(savedFriendship);
+}
+
 async function begin() {
   await connectToMongoDb();
   // await testPostCreation();
@@ -117,7 +131,11 @@ async function begin() {
   // await testReplyCreation();
   // await testUserCreation();
   // await testLikeCreation();
-  await createPosts();
+  // await createPosts();
+  // await createAFriendship(
+  //   "642d3e86740a32cd0735e69b",
+  //   "642bee86b8292d3f6d3a1ed6"
+  // );
 }
 
 begin();
