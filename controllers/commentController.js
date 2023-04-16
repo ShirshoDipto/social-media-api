@@ -7,12 +7,12 @@ const { body, validationResult } = require("express-validator");
 exports.getAllComments = async (req, res, next) => {
   try {
     // newest to oldest
-    const comments = await Comment.find({ postId: req.params.postId }).sort({
-      $natural: -1,
-    });
-    if (comments.length === 0) {
-      return res.status(404).json({ error: "Comments are not found. " });
-    }
+    const comments = await Comment.find({ postId: req.params.postId })
+      .sort({
+        $natural: -1,
+      })
+      .populate("author", "firstName lastName profiePic");
+
     return res.json({ comments });
   } catch (err) {
     return next(err);
@@ -28,23 +28,19 @@ exports.createComment = [
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
       }
+
       const comment = new Comment({
         content: req.body.content,
-        author: {
-          authorId: req.user._id,
-          firstName: req.user.firstName,
-          lastName: req.user.lastName,
-        },
+        author: req.user._id,
         postId: req.params.postId,
       });
 
-      const newComment = await comment.save();
       const post = await Post.findById(req.params.postId);
-      post.numComments += 1;
-      const savedPost = await post.save();
+      const updatedNumComments = (post.numComments += 1);
+      await Promise.all([comment.save(), post.save()]);
+
       res.json({
-        comment: newComment,
-        post: savedPost,
+        numComments: updatedNumComments,
         success: "Comment created successfully. ",
       });
     } catch (err) {

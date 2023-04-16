@@ -25,38 +25,17 @@ exports.getCommentLike = async (req, res, next) => {
 exports.createCommentLike = [
   async (req, res, next) => {
     try {
-      const like = await Like.findOne({
-        referenceId: req.params.commentId,
-        author: req.user._id,
-      });
-
-      if (!like) {
-        return next();
-      }
-
-      return res
-        .status(400)
-        .json({ error: "You cannot like a comment more than once. " });
-    } catch (err) {
-      return res.status(500).json({ error: "Internal Error Occured. " });
-    }
-  },
-
-  async (req, res, next) => {
-    try {
       const like = new Like({
         author: req.user._id,
         referenceId: req.params.commentId,
       });
 
-      const savedCommentLike = await like.save();
       const comment = await Comment.findById(req.params.commentId);
       comment.numLikes += 1;
-      const savedComment = await comment.save();
+      const results = await Promise.all([like.save(), comment.save()]);
 
       return res.json({
-        commentLike: savedCommentLike,
-        comment: savedComment,
+        commentLike: { _id: results[0]._id },
         success: "Successfully created comment like. ",
       });
     } catch (err) {
@@ -67,19 +46,14 @@ exports.createCommentLike = [
 
 exports.deleteCommentLike = async (req, res, next) => {
   try {
-    const commentLike = await Like.findByIdAndRemove(req.params.likeId);
-
-    if (!commentLike) {
-      return res.status(400).json({ error: "Your like is already removed. " });
-    }
-
     const comment = await Comment.findById(req.params.commentId);
     comment.numLikes -= 1;
-    const savedComment = await comment.save();
+    await Promise.all([
+      comment.save(),
+      Like.findByIdAndRemove(req.params.likeId),
+    ]);
 
     res.json({
-      commentLike: commentLike,
-      comment: savedComment,
       success: "Deleted the comment like successfully. ",
     });
   } catch (err) {
@@ -94,9 +68,11 @@ exports.getPostLike = async (req, res, next) => {
       referenceId: req.params.postId,
       author: req.user._id,
     });
+
     if (!postLike) {
-      return res.status(404).json({ error: "Post like not found. " });
+      return res.json({ error: "Post like not found. " });
     }
+
     return res.json({
       postLike,
       success: "Successfully fetched the post like. ",
@@ -109,38 +85,17 @@ exports.getPostLike = async (req, res, next) => {
 exports.createPostLike = [
   async (req, res, next) => {
     try {
-      const like = await Like.findOne({
-        referenceId: req.params.postId,
-        author: req.user._id,
-      });
-
-      if (!like) {
-        return next();
-      }
-
-      return res
-        .status(400)
-        .json({ error: "You cannot like a post more than once. " });
-    } catch (err) {
-      return res.status(500).json({ error: "Internal Error Occured. " });
-    }
-  },
-
-  async (req, res, next) => {
-    try {
       const like = new Like({
         author: req.user._id,
         referenceId: req.params.postId,
       });
 
-      const savedLike = await like.save();
       const post = await Post.findById(req.params.postId);
       post.numLikes += 1;
-      const savedPost = await post.save();
+      const results = await Promise.all([like.save(), post.save()]);
 
       return res.json({
-        postLike: { _id: savedLike._id },
-        // post: savedPost,
+        postLike: { _id: results[0]._id },
         success: "Successfully created post like. ",
       });
     } catch (err) {
@@ -151,19 +106,11 @@ exports.createPostLike = [
 
 exports.deletePostLike = async (req, res, next) => {
   try {
-    const like = await Like.findByIdAndRemove(req.params.likeId);
-
-    if (!like) {
-      return res.status(400).json({ error: "Your like is already removed. " });
-    }
-
     const post = await Post.findById(req.params.postId);
     post.numLikes -= 1;
-    const savedPost = await post.save();
+    await Promise.all([Like.findByIdAndRemove(req.params.likeId), post.save()]);
 
     res.json({
-      // postLike: like,
-      // post: savedPost,
       success: "Deleted the post like successfully. ",
     });
   } catch (err) {

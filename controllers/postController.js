@@ -13,10 +13,11 @@ exports.getAllPosts = async (req, res, next) => {
     const allPosts = await Post.find({})
       .sort({ $natural: -1 })
       .skip(10 * page)
-      .limit(10);
-    res.json({
-      user: res.currentUser,
-      allPosts,
+      .limit(10)
+      .populate("author", "firstName lastName profiePic");
+
+    return res.json({
+      posts: allPosts,
       success: "All posts fetched successfully.",
     });
   } catch (err) {
@@ -61,8 +62,6 @@ exports.searchPosts = async (req, res, next) => {
 };
 
 exports.createPost = [
-  body("title", "Title must be specified. ").trim().isLength({ min: 1 }),
-
   body("content", "Content field cannot be empty. ")
     .trim()
     .isLength({ min: 1 }),
@@ -73,11 +72,6 @@ exports.createPost = [
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
       }
-      if (!req.user.isBlogOwner) {
-        return res
-          .status(403)
-          .json({ error: "This user is not allowed to create post. " });
-      }
 
       let imageName;
       if (req.file) {
@@ -85,10 +79,9 @@ exports.createPost = [
       }
 
       const post = new Post({
-        title: req.body.title,
         content: req.body.content,
         image: imageName,
-        author: { authorId: req.user._id },
+        author: req.user._id,
       });
 
       const savedPost = await post.save();

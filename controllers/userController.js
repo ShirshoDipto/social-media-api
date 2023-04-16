@@ -3,6 +3,7 @@ const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
+const Post = require("../models/post");
 const Friendship = require("../models/friendship");
 
 function makeErrorObject(errorArray) {
@@ -17,6 +18,16 @@ function makeErrorObject(errorArray) {
   return errObj;
 }
 
+exports.googleLoginSuccess = async (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ error: "Google authentication failed." });
+  }
+
+  const plainUserObject = new Object(req.user);
+  const token = jwt.sign({ user: plainUserObject }, process.env.JWT_SECRET);
+  return res.json({ user: plainUserObject, token });
+};
+
 exports.googleLogin = async (req, res, next) => {
   passport.authenticate("google", (err, user, info) => {
     if (err || !user) {
@@ -24,17 +35,11 @@ exports.googleLogin = async (req, res, next) => {
         error: info.message,
       });
     }
-
-    req.login(user, { session: false }, (err) => {
+    req.login(user, (err) => {
       if (err) {
         return next(err);
       }
-
-      const plainUserObject = new Object(user);
-
-      const token = jwt.sign({ user: plainUserObject }, process.env.JWT_SECRET);
-      console.log({ user, token });
-      return res.json({ user, token });
+      return res.redirect(`${process.env.CLIENT_URI}/login/google/confirm`);
     });
   })(req, res, next);
 };
@@ -78,9 +83,10 @@ exports.signup = [
         return res.status(400).json({ errors: errObj });
       }
       if (await User.findOne({ email: req.body.email })) {
-        return res
-          .status(400)
-          .json({ error: "User already exists. Try Logging in. " });
+        return res.status(400).json({
+          error:
+            "User already exists. Try Logging in. Or did you log in with Google?",
+        });
       }
       const hashedPassword = await bcrypt.hash(req.body.confirmPassword, 10);
       const user = new User({
@@ -189,6 +195,38 @@ exports.removeFromFriendlist = async (req, res, next) => {
     return res.json({
       success: "Removed friend from the friend list successfully. ",
     });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+exports.getUsersPosts = async (req, res, next) => {
+  try {
+    const page = req.query.page;
+    const posts = await Post.find({ author: req.params.userId })
+      .sort({ $natural: -1 })
+      .skip(10 * page)
+      .limit(10)
+      .populate("author", "firstName lastName profiePic");
+
+    return res.json({ posts, success: "Posts fetched successfully. " });
+  } catch (err) {
+    return next(err);
+  }
+};
+
+exports.getSingleUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.userId).populate(
+      "friends",
+      "firstName lastName profilePic"
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: "No user found. " });
+    }
+
+    return res.json({ user, success: "User fetched successfully. " });
   } catch (err) {
     return next(err);
   }

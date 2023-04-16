@@ -7,18 +7,6 @@ const bcrypt = require("bcryptjs");
 const User = require("./models/user");
 const GoogleStrategy = require("passport-google-oidc");
 
-passport.serializeUser(function (user, cb) {
-  process.nextTick(function () {
-    cb(null, { id: user.id, username: user.username, name: user.name });
-  });
-});
-
-passport.deserializeUser(function (user, cb) {
-  process.nextTick(function () {
-    return cb(null, user);
-  });
-});
-
 passport.use(
   new LocalStrategy(
     {
@@ -39,7 +27,9 @@ passport.use(
         if (res) {
           return cb(null, user);
         } else {
-          return cb(null, false, { message: "Incorrect Password. " });
+          return cb(null, false, {
+            message: "Incorrect Password. Did you log in with Google?",
+          });
         }
       } catch (err) {
         console.log(err);
@@ -57,8 +47,9 @@ passport.use(
     },
     async function (jwtPayload, cb) {
       try {
-        const user = await User.findOne({ _id: jwtPayload.user._id });
-        return cb(null, user);
+        // const user = await User.findOne({ _id: jwtPayload.user._id });
+        // return cb(null, user);
+        return cb(null, jwtPayload.user);
       } catch (err) {
         console.log(err);
         return cb(err, false, { meessage: "Some internal error occured. " });
@@ -99,6 +90,20 @@ passport.use(
     }
   )
 );
+
+passport.serializeUser(function (user, cb) {
+  // process.nextTick(function () {
+  //   cb(null, { id: user.id, username: user.username, name: user.name });
+  // });
+  cb(null, user);
+});
+
+passport.deserializeUser(function (user, cb) {
+  // process.nextTick(function () {
+  //   return cb(null, user);
+  // });
+  cb(null, user);
+});
 
 // {
 //   id: '112222569259052241411',

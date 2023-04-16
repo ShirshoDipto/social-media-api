@@ -27,13 +27,15 @@ router.post("/login", userController.login);
 
 router.post("/signup", userController.signup);
 
+router.get("/login/google/success", userController.googleLoginSuccess);
+
 router.get("/login/google", passport.authenticate("google"));
 
 router.get("/oauth2/redirect/google", userController.googleLogin);
 
 router.get("/search/users", userController.searchUsers);
 
-// router.get("/users/:userId", userController.getSingleUser);
+router.get("/users/:userId", userController.getSingleUser);
 
 // router.put(
 //   "/users/:userId",
@@ -46,6 +48,8 @@ router.get("/search/users", userController.searchUsers);
 //   passport.authenticate("jwt", { session: false }),
 //   userController.deleteAccount
 // );
+
+router.get("/users/:userId/posts/", userController.getUsersPosts);
 
 router.put(
   "/users/:userId/friends/:friendId",
@@ -169,19 +173,19 @@ router.delete(
 
 // /** Likes related routes. (Comments)*/
 router.post(
-  "/posts/:postId/comments/:commentId/likes",
+  "/comments/:commentId/likes",
   passport.authenticate("jwt", { session: false }),
   likeController.createCommentLike
 );
 
 router.get(
-  "/posts/:postId/comments/:commentId/likes/",
+  "/comments/:commentId/likes/",
   passport.authenticate("jwt", { session: false }),
   likeController.getCommentLike
 );
 
 router.delete(
-  "/posts/:postId/comments/:commentId/likes/:likeId",
+  "/comments/:commentId/likes/:likeId",
   passport.authenticate("jwt", { session: false }),
   likeController.deleteCommentLike
 );

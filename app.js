@@ -5,6 +5,7 @@ var cookieParser = require("cookie-parser");
 const passport = require("passport");
 var logger = require("morgan");
 const session = require("express-session");
+const cors = require("cors");
 require("dotenv").config();
 require("./passport");
 
@@ -12,6 +13,12 @@ var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 
 var app = express();
+app.use(
+  cors({
+    origin: ["https://shirsho-blog.netlify.app", "http://localhost:3000"], // have to change this later on
+    credentials: true,
+  })
+);
 const mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
 const mongoDbUri = process.env.MONGODB_URI;
@@ -33,11 +40,11 @@ app.use(
   session({
     secret: "keyboard cat",
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
   })
 );
-app.use(passport.authenticate("session"));
 
+app.use(passport.authenticate("session"));
 app.use(passport.initialize());
 app.use(passport.session());
 

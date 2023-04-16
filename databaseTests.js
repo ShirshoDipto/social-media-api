@@ -124,6 +124,50 @@ async function createAFriendship(user1, user2) {
   console.log(savedFriendship);
 }
 
+async function createPostsComments() {
+  const posts = await Post.find({});
+
+  async function createTenComments(post) {
+    for (let i = 1; i < 11; i++) {
+      const newComment = new Comment({
+        content: `Test comment no. ${i} of and some lorem ipsum blah blah`,
+        postId: post._id,
+        author: post.author,
+      });
+
+      const comment = await newComment.save();
+    }
+  }
+
+  const comments = await Promise.all(
+    posts.map((post) => {
+      return createTenComments(post);
+    })
+  );
+}
+
+async function createRepliesForComments() {
+  const comments = await Comment.find({});
+
+  async function createThreeReplies(comment) {
+    for (let i = 1; i < 4; i++) {
+      const newReply = new Reply({
+        content: `Test reply no. ${i} of and some lorem ipsum blah blah`,
+        commentId: comment._id,
+        author: comment.author,
+      });
+
+      const reply = await newReply.save();
+    }
+  }
+
+  const replies = await Promise.all(
+    comments.map((comment) => {
+      return createThreeReplies(comment);
+    })
+  );
+}
+
 async function begin() {
   await connectToMongoDb();
   // await testPostCreation();
@@ -136,6 +180,8 @@ async function begin() {
   //   "642d3e86740a32cd0735e69b",
   //   "642bee86b8292d3f6d3a1ed6"
   // );
+  // await createPostsComments();
+  // await createRepliesForComments();
 }
 
 begin();
