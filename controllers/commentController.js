@@ -36,11 +36,12 @@ exports.createComment = [
       });
 
       const post = await Post.findById(req.params.postId);
-      const updatedNumComments = (post.numComments += 1);
-      await Promise.all([comment.save(), post.save()]);
+      const numComments = (post.numComments += 1);
+      const results = await Promise.all([comment.save(), post.save()]);
 
-      res.json({
-        numComments: updatedNumComments,
+      return res.json({
+        comment: results[0],
+        numComments,
         success: "Comment created successfully. ",
       });
     } catch (err) {
@@ -64,8 +65,7 @@ exports.getSingleComment = async (req, res, next) => {
 exports.updateComment = [
   body("content", "Content field must not be empty. ")
     .trim()
-    .isLength({ min: 1 })
-    .escape(),
+    .isLength({ min: 1 }),
 
   async (req, res, next) => {
     try {
@@ -73,23 +73,22 @@ exports.updateComment = [
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
       }
+
       const comment = await Comment.findById(req.params.commentId);
+
       if (!comment) {
         return res.status(404).json({ error: "Comment not found. " });
       }
 
-      if (req.user._id.toString() !== comment.author.authorId.toString()) {
+      if (req.user._id.toString() !== comment.author.toString()) {
         return res
           .status(403)
           .json({ error: "You can only update your own comments. " });
       }
 
       comment.content = req.body.content;
-      comment.numLikes = req.body.numLikes;
-      comment.numReplies = req.body.numReplies;
-      const savedComment = await comment.save();
-      res.json({
-        comment: savedComment,
+      await comment.save();
+      return res.json({
         success: "Comment created successfully. ",
       });
     } catch (err) {
@@ -101,33 +100,27 @@ exports.updateComment = [
 exports.deleteComment = async (req, res, next) => {
   try {
     const comment = await Comment.findById(req.params.commentId);
+    const post = await Post.findById(req.params.postId);
+    const numComments = (post.numComments -= 1);
 
     if (!comment) {
       return res.status(404).json({ error: "Comment not found. " });
     }
 
-    if (
-      comment.author.authorId.toString() !== req.user._id.toString() &&
-      !req.user.isBlogOwner
-    ) {
+    if (comment.author.toString() !== req.user._id.toString()) {
       return res
         .status(403)
         .json({ error: "You can delete only your own comments. " });
     }
 
-    const results = await Promise.all([
+    await Promise.all([
       Comment.findByIdAndRemove(comment._id),
-      Reply.deleteMany({ commentId: comment._id }),
       Like.deleteMany({ referenceId: comment._id }),
+      post.save(),
     ]);
 
-    const post = await Post.findById(req.params.postId);
-    post.numComments -= 1;
-    const savedPost = await post.save();
-
     return res.json({
-      deletedComment: results[0],
-      post: savedPost,
+      numComments,
       success: "Comment deleted successfully. ",
     });
   } catch (err) {

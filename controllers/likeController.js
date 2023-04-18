@@ -53,7 +53,7 @@ exports.deleteCommentLike = async (req, res, next) => {
       Like.findByIdAndRemove(req.params.likeId),
     ]);
 
-    res.json({
+    return res.json({
       success: "Deleted the comment like successfully. ",
     });
   } catch (err) {

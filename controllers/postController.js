@@ -109,13 +109,12 @@ exports.getSinglePost = async (req, res, next) => {
 };
 
 exports.updatePost = [
-  body("title", "Title must be specified. ").trim().isLength({ min: 1 }),
-
   body("content", "Content field cannot be empty. ")
     .trim()
     .isLength({ min: 1 }),
 
   async (req, res, next) => {
+    const post = await Post.findById(req.params.postId);
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -127,14 +126,10 @@ exports.updatePost = [
           .json({ error: "You can only update your own post. " });
       }
 
-      const post = await Post.findById(req.params.postId);
-      post.title = req.body.title;
       post.content = req.body.content;
-
-      const savedPost = await post.save();
+      await post.save();
 
       return res.json({
-        post: savedPost,
         success: "Post updated successfully. ",
       });
     } catch (err) {
@@ -148,7 +143,6 @@ async function deleteAllComments(id) {
   await Promise.all(
     allComments.map((comment) => {
       return Promise.all([
-        Reply.deleteMany({ commentId: comment._id }),
         Like.deleteMany({ referenceId: comment._id }),
         Comment.deleteOne({ _id: comment._id }),
       ]);
@@ -164,21 +158,21 @@ async function deletePostImage(post) {
 
 exports.deletePost = async (req, res, next) => {
   try {
-    if (
-      post.author.toString() !== req.user._id.toString() &&
-      !req.user.isAdmin
-    ) {
+    const post = await Post.findById(req.params.postId);
+
+    if (post.author.toString() !== req.user._id.toString()) {
       return res
         .status(403)
         .json({ error: "You can delete only your own posts. " });
     }
-    const post = await Post.findById(req.params.postId);
+
     await Promise.all([
       Post.findByIdAndRemove(req.params.postId),
       deleteAllComments(req.params.postId),
       Like.deleteMany({ referenceId: req.params.postId }),
       deletePostImage(post),
     ]);
+
     return res.json({ success: "Post deleted successfully. " });
   } catch (err) {
     return next(err);
