@@ -9,8 +9,6 @@ const likeController = require("../controllers/likeController");
 const friendshipController = require("../controllers/friendshipController");
 const multer = require("multer");
 
-// const upload = multer({ dest: "public/images" });
-
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "public/images");
@@ -37,11 +35,51 @@ router.get("/search/users", userController.searchUsers);
 
 router.get("/users/:userId", userController.getSingleUser);
 
-// router.put(
-//   "/users/:userId",
-//   passport.authenticate("jwt", { session: false }),
-//   userController.updateAccount
-// );
+router.put(
+  "/users/:userId/profilePic",
+  upload.single("image"),
+  passport.authenticate("jwt", { session: false }),
+  userController.replaceUserProfilePic
+);
+
+router.post(
+  "/users/:userId/profilePic",
+  upload.single("image"),
+  passport.authenticate("jwt", { session: false }),
+  userController.addUserProfilePic
+);
+
+router.delete(
+  "/users/:userId/profilePic",
+  passport.authenticate("jwt", { session: false }),
+  userController.deleteUserProfilePic
+);
+
+router.post(
+  "/users/:userId/coverPic",
+  upload.single("image"),
+  passport.authenticate("jwt", { session: false }),
+  userController.addUserCoverPic
+);
+
+router.delete(
+  "/users/:userId/coverPic",
+  passport.authenticate("jwt", { session: false }),
+  userController.deleteUserCoverPic
+);
+
+router.put(
+  "/users/:userId/coverPic",
+  upload.single("image"),
+  passport.authenticate("jwt", { session: false }),
+  userController.replaceUserCoverPic
+);
+
+router.put(
+  "/users/:userId/userBio",
+  passport.authenticate("jwt", { session: false }),
+  userController.updateUser
+);
 
 // router.delete(
 //   "/users/:userId",

@@ -5,6 +5,8 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 const Post = require("../models/post");
 const Friendship = require("../models/friendship");
+const fs = require("fs/promises");
+const path = require("path");
 
 function makeErrorObject(errorArray) {
   const errObj = {};
@@ -207,7 +209,7 @@ exports.getUsersPosts = async (req, res, next) => {
       .sort({ $natural: -1 })
       .skip(10 * page)
       .limit(10)
-      .populate("author", "firstName lastName profiePic");
+      .populate("author", "firstName lastName profilePic");
 
     return res.json({ posts, success: "Posts fetched successfully. " });
   } catch (err) {
@@ -229,5 +231,144 @@ exports.getSingleUser = async (req, res, next) => {
     return res.json({ user, success: "User fetched successfully. " });
   } catch (err) {
     return next(err);
+  }
+};
+
+async function deleteImage(imgName) {
+  await fs.unlink(path.join(__dirname + `/../public/images/${imgName}`));
+}
+
+exports.addUserProfilePic = async (req, res, next) => {
+  try {
+    if (req.user._id.toString() !== req.params.userId.toString()) {
+      await deleteImage(req.body.imageName);
+      return res
+        .status(403)
+        .json({ error: "You can only update own account info. " });
+    }
+
+    return res.json({ success: "Profile pic added successfully. " });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+exports.deleteUserProfilePic = async (req, res, next) => {
+  try {
+    if (req.user._id.toString() !== req.params.userId.toString()) {
+      return res
+        .status(403)
+        .json({ error: "You can only update own account info. " });
+    }
+
+    const user = await User.findById(req.user._id);
+    await deleteImage(user.profilePic);
+    user.profilePic = "";
+    await user.save();
+
+    return res.json({ success: "Successfully deleted profile picture. " });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+exports.replaceUserProfilePic = async (req, res, next) => {
+  try {
+    if (req.user._id.toString() !== req.params.userId.toString()) {
+      await deleteImage(req.body.imageName);
+      return res
+        .status(403)
+        .json({ error: "You can only update own account info. " });
+    }
+
+    const user = await User.findById(req.user._id);
+    await deleteImage(user.profilePic);
+    user.profilePic = req.body.imageName;
+    await user.save();
+
+    return res.json({ success: "Profile Pic replaced successfully. " });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+exports.addUserCoverPic = async (req, res, next) => {
+  try {
+    if (req.user._id.toString() !== req.params.userId.toString()) {
+      await deleteImage(req.body.imageName);
+      return res
+        .status(403)
+        .json({ error: "You can only update own account info. " });
+    }
+
+    return res.json({ success: "Cover pic added successfully. " });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+exports.deleteUserCoverPic = async (req, res, next) => {
+  try {
+    if (req.user._id.toString() !== req.params.userId.toString()) {
+      return res
+        .status(403)
+        .json({ error: "You can only update own account info. " });
+    }
+
+    const user = await User.findById(req.user._id);
+    await deleteImage(user.coverPic);
+    user.coverPic = "";
+    await user.save();
+
+    return res.json({ success: "Successfully deleted cover picture. " });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+exports.replaceUserCoverPic = async (req, res, next) => {
+  try {
+    if (req.user._id.toString() !== req.params.userId.toString()) {
+      await deleteImage(req.body.imageName);
+      return res
+        .status(403)
+        .json({ error: "You can only update own account info. " });
+    }
+
+    const user = await User.findById(req.user._id);
+    await deleteImage(user.coverPic);
+    user.coverPic = req.body.imageName;
+    await user.save();
+
+    return res.json({ success: "Cover Pic replaced successfully. " });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+exports.updateUser = async (req, res, next) => {
+  try {
+    if (req.user._id.toString() !== req.params.userId.toString()) {
+      return res
+        .status(403)
+        .json({ error: "You can only update own account info. " });
+    }
+
+    const user = await User.findById(req.user._id);
+    user.firstName = req.body.firstName;
+    user.lastName = req.body.lastName;
+    user.profilePic = req.body.profilePic;
+    user.coverPic = req.body.coverPic;
+    user.desc = req.body.desc;
+    user.job = req.body.job;
+    user.edu = req.body.edu;
+    user.city = req.body.city;
+    user.from = req.body.from;
+    user.relationship = req.body.relationship;
+
+    await user.save();
+    return res.json({ success: "User account updated successfully. " });
+  } catch (error) {
+    return next(error);
   }
 };

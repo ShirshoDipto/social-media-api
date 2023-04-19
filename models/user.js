@@ -36,8 +36,9 @@ const UserSchema = new Schema(
       default: 0,
       enum: [
         0, // Not available
-        1, // In a relationship
-        2, // Married
+        1, // Single
+        2, // Married,
+        3, // In a relationship
       ],
     },
     notifications: [

@@ -1,6 +1,5 @@
 const Post = require("../models/post");
 const Comment = require("../models/comment");
-const Reply = require("../models/reply");
 const Like = require("../models/like");
 const { body, validationResult } = require("express-validator");
 const fs = require("fs/promises");
@@ -14,7 +13,7 @@ exports.getAllPosts = async (req, res, next) => {
       .sort({ $natural: -1 })
       .skip(10 * page)
       .limit(10)
-      .populate("author", "firstName lastName profiePic");
+      .populate("author", "firstName lastName profilePic");
 
     return res.json({
       posts: allPosts,
