@@ -20,6 +20,20 @@ function makeErrorObject(errorArray) {
   return errObj;
 }
 
+exports.logout = async (req, res, next) => {
+  if (req.user) {
+    req.logout(function (err) {
+      if (err) {
+        return next(err);
+      }
+      return res.json({ success: "Successfully logged out." });
+    });
+    return;
+  }
+
+  return res.json({ success: "Successfully logged out." });
+};
+
 exports.googleLoginSuccess = async (req, res, next) => {
   if (!req.user) {
     return res.status(401).json({ error: "Google authentication failed." });
@@ -37,11 +51,12 @@ exports.googleLogin = async (req, res, next) => {
         error: info.message,
       });
     }
+
     req.login(user, (err) => {
       if (err) {
         return next(err);
       }
-      return res.redirect(`${process.env.CLIENT_URI}/login/google/confirm`);
+      return res.redirect(`${process.env.CLIENT_URI}/?google=1`);
     });
   })(req, res, next);
 };
@@ -156,10 +171,18 @@ exports.login = [
 
 exports.searchUsers = async (req, res, next) => {
   try {
+    const searchTexts = req.query.text.replace(/%20/g, " ").split("@")[0];
+    // const searchResult = await User.find(
+    //   { $text: { $search: `\"${searchTexts}\"` } }, // exact search (AND)
+    //   { score: { $meta: "textScore" } }
+    // ).sort({ score: { $meta: "textScore" } });
+
     const searchResult = await User.find(
-      { $text: { $search: `\"${req.body.searchTexts}\"` } }, // exact search (AND)
+      { $text: { $search: `${searchTexts}` } }, // OR search
       { score: { $meta: "textScore" } }
-    ).sort({ score: { $meta: "textScore" } });
+    )
+      .sort({ score: { $meta: "textScore" } })
+      .select("firstName lastName profilePic");
 
     return res.json({ searchResult });
   } catch (err) {
@@ -172,25 +195,26 @@ exports.removeFromFriendlist = async (req, res, next) => {
     const friendship = await Friendship.findOne({
       $or: [
         {
-          $and: [
-            { requester: req.user._id },
-            { recipient: req.params.friendId },
-          ],
+          $and: [{ requester: req.user._id }, { recipient: req.params.userId }],
         },
         {
-          $and: [
-            { requester: req.params.friendId },
-            { recipient: req.user._id },
-          ],
+          $and: [{ requester: req.params.userId }, { recipient: req.user._id }],
         },
       ],
     });
 
-    const friend = await User.findById(req.params.friendId);
+    if (!friendship) {
+      return res.status(404).json({ error: "Friendship not found. " });
+    }
+
+    const friends = await Promise.all([
+      User.findById(req.user._id),
+      User.findById(req.params.userId),
+    ]);
 
     await Promise.all([
-      friend.updateOne({ $pull: { friends: req.user._id } }),
-      req.user.updateOne({ $pull: { friends: req.params.friendId } }),
+      friends[1].updateOne({ $pull: { friends: req.user._id } }),
+      friends[0].updateOne({ $pull: { friends: req.params.userId } }),
       Friendship.deleteOne({ _id: friendship._id }),
     ]);
 
@@ -366,8 +390,12 @@ exports.updateUser = async (req, res, next) => {
     user.from = req.body.from;
     user.relationship = req.body.relationship;
 
-    await user.save();
-    return res.json({ success: "User account updated successfully. " });
+    const savedUser = await user.save();
+    console.log(savedUser);
+    return res.json({
+      user: savedUser,
+      success: "User account updated successfully. ",
+    });
   } catch (error) {
     return next(error);
   }

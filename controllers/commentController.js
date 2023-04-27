@@ -1,5 +1,4 @@
 const Comment = require("../models/comment");
-const Reply = require("../models/reply");
 const Post = require("../models/post");
 const Like = require("../models/like");
 const { body, validationResult } = require("express-validator");
@@ -11,7 +10,7 @@ exports.getAllComments = async (req, res, next) => {
       .sort({
         $natural: -1,
       })
-      .populate("author", "firstName lastName profiePic");
+      .populate("author", "firstName lastName profilePic");
 
     return res.json({ comments });
   } catch (err) {

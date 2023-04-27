@@ -1,4 +1,5 @@
 const Post = require("../models/post");
+const User = require("../models/user");
 const Comment = require("../models/comment");
 const Like = require("../models/like");
 const { body, validationResult } = require("express-validator");
@@ -30,8 +31,10 @@ exports.getTimelinePosts = async (req, res, next) => {
     if (req.query.page) {
       page = req.query.page;
     }
+
+    const user = await User.findById(req.user._id);
     const timelinePosts = await Post.find({
-      author: [req.user._id, ...req.user.friends],
+      author: [user._id, ...user.friends],
     })
       .sort({ $natural: -1 })
       .skip(page * 10)

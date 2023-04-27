@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
-const friendshipSchema = new Schema(
+const FriendshipSchema = new Schema(
   {
     requester: { type: Schema.Types.ObjectId, ref: "User", required: true },
     recipient: { type: Schema.Types.ObjectId, ref: "User", required: true },
@@ -18,4 +18,4 @@ const friendshipSchema = new Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Friendship", friendshipSchema);
+module.exports = mongoose.model("Friendship", FriendshipSchema);

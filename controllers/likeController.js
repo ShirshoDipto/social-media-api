@@ -1,6 +1,5 @@
 const Post = require("../models/post");
 const Comment = require("../models/comment");
-const Reply = require("../models/reply");
 const Like = require("../models/like");
 
 /** For comments....  */

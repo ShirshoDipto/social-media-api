@@ -2,11 +2,8 @@ const mongoose = require("mongoose");
 const Post = require("./models/post");
 const Comment = require("./models/comment");
 const Like = require("./models/like");
-const Reply = require("./models/reply");
 const User = require("./models/user");
 const Friendship = require("./models/friendship");
-// const Post = require("./models/post");
-// const Post = require("./models/post");
 require("dotenv").config();
 
 mongoose.set("strictQuery", false);
@@ -168,6 +165,25 @@ async function createRepliesForComments() {
   );
 }
 
+async function fixNumComments() {
+  try {
+    const posts = await Post.find({});
+
+    posts.forEach(async (post) => {
+      const numComm = await Comment.countDocuments({ postId: post._id });
+      const numLi = await Like.countDocuments({ referenceId: post._id });
+      post.numComments = numComm;
+      post.numLikes = numLi;
+      await post.save();
+      console.log("Saved One Document... ");
+    });
+
+    console.log("Finished.");
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 async function begin() {
   await connectToMongoDb();
   // await testPostCreation();
@@ -182,6 +198,7 @@ async function begin() {
   // );
   // await createPostsComments();
   // await createRepliesForComments();
+  await fixNumComments();
 }
 
 begin();

@@ -65,9 +65,40 @@ exports.sendFriendRequest = async (req, res, next) => {
   }
 };
 
+exports.cancelFriendRequest = async (req, res, next) => {
+  try {
+    const friendship = await Friendship.findById(req.params.friendshipId);
+
+    if (!friendship) {
+      return res.status(404).json({ error: "Friendship not found." });
+    }
+
+    if (friendship.status === 1) {
+      return res
+        .status(403)
+        .json({ error: "You are already friends with this user." });
+    }
+
+    if (req.user._id.toString() !== friendship.requester.toString()) {
+      return res
+        .status(403)
+        .json({ error: "You are not allowed to cancel this friend request. " });
+    }
+
+    await friendship.deleteOne({ _id: friendship._id });
+    return res.json({ sucsess: "Friend request cancelled successfully. " });
+  } catch (err) {
+    return next(err);
+  }
+};
+
 exports.rejectFriendRequest = async (req, res, next) => {
   try {
     const friendship = await Friendship.findById(req.params.friendshipId);
+
+    if (!friendship) {
+      return res.status(404).json({ error: "Friendship not found." });
+    }
 
     if (req.user._id.toString() !== friendship.recipient.toString()) {
       return res
@@ -76,7 +107,7 @@ exports.rejectFriendRequest = async (req, res, next) => {
     }
 
     await friendship.deleteOne({ _id: friendship._id });
-    return res.json({ sucess: "Friend request rejected successfully. " });
+    return res.json({ sucsess: "Friend request rejected successfully. " });
   } catch (err) {
     return next(err);
   }
@@ -86,21 +117,22 @@ exports.acceptFriendRequest = async (req, res, next) => {
   try {
     const friendship = await Friendship.findById(req.params.friendshipId);
     const reqSender = await User.findById(friendship.requester);
+    const reqRecipient = await User.findById(req.user._id);
 
     if (req.user._id.toString() !== friendship.recipient.toString()) {
       return res
         .status(403)
-        .json({ error: "You are allowed to accept this friend request. " });
+        .json({ error: "You are not allowed to accept this friend request. " });
     }
 
     friendship.status = 1;
     await Promise.all([
       friendship.save(),
-      req.user.updateOne({ $push: { friends: friendship.requester } }),
+      reqRecipient.updateOne({ $push: { friends: friendship.requester } }),
       reqSender.updateOne({ $push: { friends: friendship.recipient } }),
     ]);
 
-    return res.json({ sucess: "Friend request accepted successfully. " });
+    return res.json({ success: "Friend request accepted successfully. " });
   } catch (err) {
     return next(err);
   }

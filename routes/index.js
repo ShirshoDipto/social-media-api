@@ -4,9 +4,11 @@ const passport = require("passport");
 const userController = require("../controllers/userController");
 const postController = require("../controllers/postController");
 const commentController = require("../controllers/commentController");
-const replyController = require("../controllers/replyController");
+const notificationController = require("../controllers/notificationController");
 const likeController = require("../controllers/likeController");
 const friendshipController = require("../controllers/friendshipController");
+const messageController = require("../controllers/messageController");
+const conversationController = require("../controllers/conversationController");
 const multer = require("multer");
 
 const storage = multer.diskStorage({
@@ -25,13 +27,15 @@ router.post("/login", userController.login);
 
 router.post("/signup", userController.signup);
 
+router.post("/logout", userController.logout);
+
 router.get("/login/google/success", userController.googleLoginSuccess);
 
 router.get("/login/google", passport.authenticate("google"));
 
 router.get("/oauth2/redirect/google", userController.googleLogin);
 
-router.get("/search/users", userController.searchUsers);
+router.get("/users/search", userController.searchUsers);
 
 router.get("/users/:userId", userController.getSingleUser);
 
@@ -81,6 +85,12 @@ router.put(
   userController.updateUser
 );
 
+router.put(
+  "/users/:userId/friends",
+  passport.authenticate("jwt", { session: false }),
+  userController.removeFromFriendlist
+);
+
 // router.delete(
 //   "/users/:userId",
 //   passport.authenticate("jwt", { session: false }),
@@ -88,12 +98,6 @@ router.put(
 // );
 
 router.get("/users/:userId/posts/", userController.getUsersPosts);
-
-router.put(
-  "/users/:userId/friends/:friendId",
-  passport.authenticate("jwt", { session: false }),
-  userController.removeFromFriendlist
-);
 
 /** friendship related routes */
 
@@ -107,6 +111,12 @@ router.post(
   "/users/:userId/friendships",
   passport.authenticate("jwt", { session: false }),
   friendshipController.sendFriendRequest
+);
+
+router.delete(
+  "/users/:userId/friendships/:friendshipId/cancel",
+  passport.authenticate("jwt", { session: false }),
+  friendshipController.cancelFriendRequest
 );
 
 router.put(
@@ -180,36 +190,7 @@ router.delete(
   commentController.deleteComment
 );
 
-/** Reply related routes. */
-router.get(
-  "/posts/:postId/comments/:commentId/replies",
-  replyController.getAllReplies
-);
-
-router.post(
-  "/posts/:postId/comments/:commentId/replies",
-  passport.authenticate("jwt", { session: false }),
-  replyController.createReply
-);
-
-router.get(
-  "/posts/:postId/comments/:commentId/replies/:replyId",
-  replyController.getSingleReply
-);
-
-router.put(
-  "/posts/:postId/comments/:commentId/replies/:replyId",
-  passport.authenticate("jwt", { session: false }),
-  replyController.updateReply
-);
-
-router.delete(
-  "/posts/:postId/comments/:commentId/replies/:replyId",
-  passport.authenticate("jwt", { session: false }),
-  replyController.deleteReply
-);
-
-// /** Likes related routes. (Comments)*/
+/** Likes related routes. (Comments)*/
 router.post(
   "/comments/:commentId/likes",
   passport.authenticate("jwt", { session: false }),
@@ -228,7 +209,7 @@ router.delete(
   likeController.deleteCommentLike
 );
 
-// /** Likes related routes. (Posts)*/
+/** Likes related routes. (Posts)*/
 router.post(
   "/posts/:postId/likes",
   passport.authenticate("jwt", { session: false }),
@@ -245,6 +226,53 @@ router.delete(
   "/posts/:postId/likes/:likeId",
   passport.authenticate("jwt", { session: false }),
   likeController.deletePostLike
+);
+
+/** Notification */
+router.get(
+  "/notifications",
+  passport.authenticate("jwt", { session: false }),
+  notificationController.getNewNotifications
+);
+
+router.post(
+  "/notifications",
+  passport.authenticate("jwt", { session: false }),
+  notificationController.createNewNotification
+);
+
+router.put(
+  "/notifications/:notificationId",
+  passport.authenticate("jwt", { session: false }),
+  notificationController.updateNotificationAsSeen
+);
+
+// Message realted routes
+
+router.get(
+  "/messenger/conversations/:conversationId/messages",
+  passport.authenticate("jwt", { session: false }),
+  messageController.getMessages
+);
+
+router.post(
+  "/messenger/conversations/:conversationId/messages",
+  passport.authenticate("jwt", { session: false }),
+  messageController.createMessage
+);
+
+// Conversation realted routes
+
+router.get(
+  "/messenger/conversations/:userId",
+  passport.authenticate("jwt", { session: false }),
+  conversationController.getConversationsOfUser
+);
+
+router.post(
+  "/messenger/conversations",
+  passport.authenticate("jwt", { session: false }),
+  conversationController.createConversation
 );
 
 module.exports = router;
