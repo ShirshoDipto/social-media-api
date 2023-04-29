@@ -27,17 +27,12 @@ exports.getAllPosts = async (req, res, next) => {
 
 exports.getTimelinePosts = async (req, res, next) => {
   try {
-    let page = 0;
-    if (req.query.page) {
-      page = req.query.page;
-    }
-
     const user = await User.findById(req.user._id);
     const timelinePosts = await Post.find({
       author: [user._id, ...user.friends],
     })
       .sort({ $natural: -1 })
-      .skip(page * 10)
+      .skip(req.query.skip)
       .limit(10)
       .populate("author");
 

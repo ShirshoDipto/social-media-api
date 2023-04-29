@@ -7,12 +7,13 @@ const ConversationSchema = new Schema(
     members: [
       {
         type: Schema.Types.ObjectId,
+        ref: "User",
         required: true,
       },
     ],
     lastMsg: {
       type: String,
-      required: true,
+      default: "",
     },
     unseenMsg: {
       type: Number,

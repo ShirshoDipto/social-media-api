@@ -228,10 +228,9 @@ exports.removeFromFriendlist = async (req, res, next) => {
 
 exports.getUsersPosts = async (req, res, next) => {
   try {
-    const page = req.query.page;
     const posts = await Post.find({ author: req.params.userId })
       .sort({ $natural: -1 })
-      .skip(10 * page)
+      .skip(req.query.skip)
       .limit(10)
       .populate("author", "firstName lastName profilePic");
 

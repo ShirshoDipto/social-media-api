@@ -6,7 +6,9 @@ exports.getConversationsOfUser = async (req, res, next) => {
   try {
     const conversations = await Conversation.find({
       members: { $in: [req.params.userId] },
-    }).sort({ updatedAt: -1 });
+    })
+      .sort({ updatedAt: -1 })
+      .populate("members", "firstName lastName profilePic");
 
     return res.json({
       conversations,
