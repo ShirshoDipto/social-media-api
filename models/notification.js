@@ -4,9 +4,32 @@ const Schema = mongoose.Schema;
 
 const NotificationSchema = new Schema(
   {
-    sender: { type: Schema.Types.ObjectId, required: true },
-    receiver: { type: Schema.Types.ObjectId, required: true },
-    isSeen: { type: Boolean, default: false },
+    sender: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      ref: "User",
+    },
+
+    receiver: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      ref: "User",
+    },
+
+    message: {
+      type: Schema.Types.ObjectId,
+    },
+
+    isSeen: {
+      type: Boolean,
+      default: false,
+    },
+
+    friendshipId: {
+      type: Schema.Types.ObjectId,
+      ref: "Friendship",
+    },
+
     notificationType: {
       type: Number,
       enum: [
@@ -17,6 +40,7 @@ const NotificationSchema = new Schema(
         4, // new comment
         5, // new like
       ],
+      required: true,
     },
   },
   { timestamps: true }

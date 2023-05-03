@@ -230,15 +230,33 @@ router.delete(
 
 /** Notification */
 router.get(
-  "/notifications",
+  "/notifications/fndReq",
   passport.authenticate("jwt", { session: false }),
-  notificationController.getNewNotifications
+  notificationController.getFndReqNotifications
+);
+
+router.get(
+  "/notifications/oldNotifications",
+  passport.authenticate("jwt", { session: false }),
+  notificationController.getOldNotifcations
+);
+
+router.get(
+  "/notifications/newNotifications",
+  passport.authenticate("jwt", { session: false }),
+  notificationController.getNewNotifcations
 );
 
 router.post(
   "/notifications",
   passport.authenticate("jwt", { session: false }),
   notificationController.createNewNotification
+);
+
+router.put(
+  "/notifications/markAllAsRead",
+  passport.authenticate("jwt", { session: false }),
+  notificationController.markAllAsRead
 );
 
 router.put(
@@ -250,9 +268,15 @@ router.put(
 // Message realted routes
 
 router.get(
-  "/messenger/conversations/:conversationId/messages",
+  "/messenger/conversations/:conversationId/messages/seen",
   passport.authenticate("jwt", { session: false }),
-  messageController.getMessages
+  messageController.getSeenMsgs
+);
+
+router.get(
+  "/messenger/conversations/:conversationId/messages/unseen",
+  passport.authenticate("jwt", { session: false }),
+  messageController.getUnseenMsgs
 );
 
 router.post(
@@ -266,7 +290,7 @@ router.post(
 router.get(
   "/messenger/conversations/:userId",
   passport.authenticate("jwt", { session: false }),
-  conversationController.getConversationsOfUser
+  conversationController.getConversations
 );
 
 router.post(

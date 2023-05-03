@@ -15,7 +15,7 @@ var usersRouter = require("./routes/users");
 var app = express();
 app.use(
   cors({
-    origin: ["https://shirsho-blog.netlify.app", "http://localhost:3000"], // have to change this later on
+    origin: [process.env.CLIENT_URI, process.env.SOCKET_URI], // have to change this later on
     credentials: true,
   })
 );

@@ -1,7 +1,22 @@
 const { Server } = require("socket.io");
-const { InMemorySessionStore } = require("./sessionStore");
-const sessionStore = new InMemorySessionStore();
-const { v4: uuidv4 } = require("uuid");
+const User = require("./models/user");
+const Conversation = require("./models/conversation");
+const Message = require("./models/message");
+const Notification = require("./models/notification");
+
+const root = "http://localhost:5000";
+
+async function createMsg(sender) {
+  const res = await fetch(`${root}/api/messenger/messeges/`);
+}
+
+async function createNotification() {
+  console.log("Creating...");
+}
+
+async function updateConversation() {
+  console.log("Updating...");
+}
 
 exports.createSocketServer = (server) => {
   const io = new Server(server, {
@@ -23,18 +38,43 @@ exports.createSocketServer = (server) => {
       users[`${userId}`] = {
         userId: userId,
         socketId: socket.id,
+        currentChat: null,
+        isOnMessenger: false,
       };
     }
     next();
   });
 
-  io.on("connection", (socket) => {
+  io.on("connection", async (socket) => {
     console.log(`${socket.userId} connected...`);
 
-    socket.on("sendMsg", ({ receiverId, msg }) => {
+    socket.on("sendMsg", async ({ receiverId, msg }) => {
       const receiver = users[receiverId];
-      if (receiver) {
-        io.to(receiver.socketId).emit("getMsg", msg);
+      try {
+        if (receiver && receiver.currentChat) {
+          io.to(receiver.socketId).emit("getMsg", msg);
+        } else if (
+          receiver &&
+          receiver.isOnMessenger &&
+          !receiver.currentChat
+        ) {
+          const [msg, conv] = await Promise.all([
+            createMsg(),
+            updateConversation(),
+          ]);
+
+          io.to(receiver.socketId).emit("getMsg", msg);
+        } else if ((receiver && !receiver.isOnMessenger) || !receiver) {
+          const [msg, conv, notif] = await Promise.all([
+            createMsg(),
+            updateConversation(),
+            createNotification(),
+          ]);
+
+          io.to(receiver.socketId).emit("newMsg", notif);
+        }
+      } catch (error) {
+        socket.emit("internalError", error);
       }
     });
 

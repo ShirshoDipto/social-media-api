@@ -4,6 +4,7 @@ const Comment = require("./models/comment");
 const Like = require("./models/like");
 const User = require("./models/user");
 const Friendship = require("./models/friendship");
+const Notification = require("./models/notification");
 require("dotenv").config();
 
 mongoose.set("strictQuery", false);
@@ -184,6 +185,16 @@ async function fixNumComments() {
   }
 }
 
+async function makeSeenNotifUnseen() {
+  const notifications = await Notification.find({
+    isSeen: false,
+    receiver: "642d3e86740a32cd0735e69b",
+    notificationType: 1,
+  });
+
+  console.log(notifications);
+}
+
 async function begin() {
   await connectToMongoDb();
   // await testPostCreation();
@@ -198,7 +209,8 @@ async function begin() {
   // );
   // await createPostsComments();
   // await createRepliesForComments();
-  await fixNumComments();
+  // await fixNumComments();
+  await makeSeenNotifUnseen();
 }
 
 begin();

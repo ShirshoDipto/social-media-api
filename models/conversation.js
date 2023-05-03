@@ -6,16 +6,15 @@ const ConversationSchema = new Schema(
   {
     members: [
       {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
+        member: { type: Schema.Types.ObjectId, ref: "User", required: true },
+        unseenMsgs: { type: Number, default: 0 },
       },
     ],
     lastMsg: {
       type: String,
       default: "",
     },
-    unseenMsg: {
+    unseenMsgs: {
       type: Number,
       default: 0,
     },

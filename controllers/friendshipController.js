@@ -1,4 +1,5 @@
 const Friendship = require("../models/friendship");
+const Notification = require("../models/notification");
 const User = require("../models/user");
 
 exports.getFriendshipStatus = async (req, res, next) => {
@@ -22,6 +23,31 @@ exports.getFriendshipStatus = async (req, res, next) => {
     return next(err);
   }
 };
+
+async function createFndshipAndNotif(sender, receiver, fndshipId) {
+  try {
+    const friendship = new Friendship({
+      requester: sender,
+      recipient: receiver,
+      status: 0,
+    });
+
+    const savedFndship = await friendship.save();
+
+    const notification = new Notification({
+      sender: sender,
+      receiver: receiver,
+      friendshipId: savedFndship._id,
+      notificationType: 0,
+    });
+
+    await notification.save();
+
+    return savedFndship;
+  } catch (error) {
+    throw error;
+  }
+}
 
 exports.sendFriendRequest = async (req, res, next) => {
   try {
@@ -48,16 +74,13 @@ exports.sendFriendRequest = async (req, res, next) => {
         .json({ error: "You are already friends with this user. " });
     }
 
-    const friendship = new Friendship({
-      requester: req.user._id,
-      recipient: req.params.userId,
-      status: 0,
-    });
-
-    const savedFriendship = await friendship.save();
+    const savedFndship = await createFndshipAndNotif(
+      req.user._id,
+      req.params.userId
+    );
 
     return res.json({
-      friendship: savedFriendship,
+      friendship: savedFndship,
       success: "Friend request sent successfully. ",
     });
   } catch (err) {
@@ -85,7 +108,15 @@ exports.cancelFriendRequest = async (req, res, next) => {
         .json({ error: "You are not allowed to cancel this friend request. " });
     }
 
-    await friendship.deleteOne({ _id: friendship._id });
+    await Promise.all([
+      Notification.findOneAndDelete({
+        sender: req.user._id,
+        receiver: req.params.userId,
+        notificationType: 0,
+      }),
+      friendship.deleteOne({ _id: friendship._id }),
+    ]);
+
     return res.json({ sucsess: "Friend request cancelled successfully. " });
   } catch (err) {
     return next(err);
@@ -106,7 +137,10 @@ exports.rejectFriendRequest = async (req, res, next) => {
         .json({ error: "You are allowed to reject this friend request. " });
     }
 
-    await friendship.deleteOne({ _id: friendship._id });
+    await Promise.all([
+      Notification.findOneAndDelete({ friendshipId: friendship._id }),
+      friendship.deleteOne({ _id: friendship._id }),
+    ]);
     return res.json({ sucsess: "Friend request rejected successfully. " });
   } catch (err) {
     return next(err);
@@ -118,6 +152,12 @@ exports.acceptFriendRequest = async (req, res, next) => {
     const friendship = await Friendship.findById(req.params.friendshipId);
     const reqSender = await User.findById(friendship.requester);
     const reqRecipient = await User.findById(req.user._id);
+    const notification = await Notification.findOne({
+      friendshipId: friendship._id,
+    });
+    notification.notificationType = 1;
+    notification.receiver = friendship.requester;
+    notification.sender = req.user._id;
 
     if (req.user._id.toString() !== friendship.recipient.toString()) {
       return res
@@ -130,6 +170,7 @@ exports.acceptFriendRequest = async (req, res, next) => {
       friendship.save(),
       reqRecipient.updateOne({ $push: { friends: friendship.requester } }),
       reqSender.updateOne({ $push: { friends: friendship.recipient } }),
+      notification.save(),
     ]);
 
     return res.json({ success: "Friend request accepted successfully. " });

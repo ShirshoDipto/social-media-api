@@ -17,10 +17,13 @@ const MessageSchema = new Schema(
       type: String,
       required: true,
     },
-    isSeen: {
-      type: Boolean,
-      default: true,
-    },
+    seenBy: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+    ],
   },
   { timestamps: true }
 );

@@ -2,13 +2,16 @@ const User = require("../models/user");
 const Message = require("../models/message");
 const Conversation = require("../models/conversation");
 
-exports.getConversationsOfUser = async (req, res, next) => {
+exports.getConversations = async (req, res, next) => {
   try {
+    // const conversations = await Conversation.find({
+    //   members: { $in: [req.params.userId] },
+    // })
     const conversations = await Conversation.find({
-      members: { $in: [req.params.userId] },
+      "members.member": req.user._id,
     })
       .sort({ updatedAt: -1 })
-      .populate("members", "firstName lastName profilePic");
+      .populate("members.member", "firstName lastName profilePic");
 
     return res.json({
       conversations,
@@ -22,14 +25,17 @@ exports.getConversationsOfUser = async (req, res, next) => {
 exports.createConversation = async (req, res, next) => {
   try {
     const conversation = new Conversation({
-      members: [req.body.senderId, req.body.receiverId],
-      lastMsg: req.body.lastMsg,
+      members: [{ member: req.body.userId }, { member: req.user._id }],
     });
 
-    const savedConversation = await conversation.save();
+    const c = await conversation.save();
 
+    const newConv = await Conversation.findById(c._id).populate(
+      "members.member",
+      "firstName lastName profilePic"
+    );
     return res.json({
-      conversation: savedConversation,
+      conversation: newConv,
       success: "Conversation created successfully. ",
     });
   } catch (error) {
