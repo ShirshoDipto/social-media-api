@@ -4,14 +4,11 @@ const Conversation = require("../models/conversation");
 
 exports.getConversations = async (req, res, next) => {
   try {
-    // const conversations = await Conversation.find({
-    //   members: { $in: [req.params.userId] },
-    // })
     const conversations = await Conversation.find({
-      "members.member": req.user._id,
+      members: { $in: [req.user._id] },
     })
       .sort({ updatedAt: -1 })
-      .populate("members.member", "firstName lastName profilePic");
+      .populate("members", "firstName lastName profilePic");
 
     return res.json({
       conversations,
@@ -25,13 +22,14 @@ exports.getConversations = async (req, res, next) => {
 exports.createConversation = async (req, res, next) => {
   try {
     const conversation = new Conversation({
-      members: [{ member: req.body.userId }, { member: req.user._id }],
+      members: [req.body.userId, req.user._id],
+      unseenMsgs: [{ userId: req.body.userId }, { userId: req.user._id }],
     });
 
     const c = await conversation.save();
 
     const newConv = await Conversation.findById(c._id).populate(
-      "members.member",
+      "members",
       "firstName lastName profilePic"
     );
     return res.json({

@@ -36,9 +36,36 @@ exports.getUnseenMsgs = async (req, res, next) => {
 
     const messagesReversed = messages.reverse();
 
+    console.log(messagesReversed.length);
+
     return res.json({
       messages: messagesReversed,
       success: "Successfully fetched messages. ",
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+exports.makeUnseenMsgsAsSeen = async (req, res, next) => {
+  try {
+    const conversation = await Conversation.findById(req.params.conversationId);
+    conversation.unseenMsgs.forEach((msg) => (msg.numUnseen = 0));
+    const [msg, conv] = await Promise.all([
+      Message.updateMany(
+        {
+          conversationId: req.params.conversationId,
+          seenBy: { $nin: [req.user._id] },
+        },
+        {
+          $set: { seenBy: req.body.seenBy },
+        }
+      ),
+      conversation.save(),
+    ]);
+
+    return res.json({
+      success: "Successfully marked all unseen messages as seen. ",
     });
   } catch (error) {
     return next(error);
@@ -52,14 +79,12 @@ exports.createMessage = async (req, res, next) => {
     const conversation = await Conversation.findById(req.body.conversationId);
     conversation.lastMsg = req.body.content;
     if (req.body.seenBy.length === 1) {
-      conversation.members.forEach((member) => {
-        if (member.member !== req.body.sender) {
-          member.unseenMsgs += 1;
+      conversation.unseenMsgs.forEach((msg) => {
+        if (msg.userId.toString() !== req.body.sender.toString()) {
+          msg.numUnseen += 1;
         }
       });
     }
-
-    console.log(conversation);
 
     const [conv, msg] = await Promise.all([
       conversation.save(),
@@ -70,6 +95,7 @@ exports.createMessage = async (req, res, next) => {
       success: "Successfully created message. ",
     });
   } catch (error) {
+    console.log(error);
     return next(error);
   }
 };

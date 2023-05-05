@@ -65,26 +65,20 @@ exports.getOldNotifcations = async (req, res, next) => {
   }
 };
 
-async function markRead(data) {
-  data.isSeen = true;
-  await data.save();
-}
-
 exports.markAllAsRead = async (req, res, next) => {
   try {
-    const unReadNotifis = await Notification.find({
-      $or: [
-        { isSeen: false, receiver: req.user._id, notificationType: 1 },
-        { isSeen: false, receiver: req.user._id, notificationType: 3 },
-        { isSeen: false, receiver: req.user._id, notificationType: 4 },
-        { isSeen: false, receiver: req.user._id, notificationType: 5 },
-      ],
-    });
-
-    await Promise.all(
-      unReadNotifis.map((notif) => {
-        return markRead(notif);
-      })
+    await Notification.updateMany(
+      {
+        $or: [
+          { isSeen: false, receiver: req.user._id, notificationType: 1 },
+          { isSeen: false, receiver: req.user._id, notificationType: 3 },
+          { isSeen: false, receiver: req.user._id, notificationType: 4 },
+          { isSeen: false, receiver: req.user._id, notificationType: 5 },
+        ],
+      },
+      {
+        $set: { isSeen: true },
+      }
     );
 
     return res.json({ success: "Successfully marked as read. " });

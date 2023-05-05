@@ -285,6 +285,12 @@ router.post(
   messageController.createMessage
 );
 
+router.put(
+  "/messenger/conversations/:conversationId/messages/markAsSeen",
+  passport.authenticate("jwt", { session: false }),
+  messageController.makeUnseenMsgsAsSeen
+);
+
 // Conversation realted routes
 
 router.get(
