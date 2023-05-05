@@ -36,8 +36,6 @@ exports.getUnseenMsgs = async (req, res, next) => {
 
     const messagesReversed = messages.reverse();
 
-    console.log(messagesReversed.length);
-
     return res.json({
       messages: messagesReversed,
       success: "Successfully fetched messages. ",
@@ -95,7 +93,6 @@ exports.createMessage = async (req, res, next) => {
       success: "Successfully created message. ",
     });
   } catch (error) {
-    console.log(error);
     return next(error);
   }
 };
