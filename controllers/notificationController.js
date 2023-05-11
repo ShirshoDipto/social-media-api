@@ -87,16 +87,88 @@ exports.markAllAsRead = async (req, res, next) => {
   }
 };
 
+exports.getNewMsgNotifs = async (req, res, next) => {
+  try {
+    const notifications = await Notification.find({
+      isSeen: false,
+      receiver: req.user._id,
+      notificationType: 2,
+    })
+      .sort({ createdAt: -1 })
+      .populate("sender", "firstName lastName profilePic");
+
+    return res.json({
+      notifications,
+      success: "Notifications fetched successfully. ",
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+exports.getOldMsgNotifs = async (req, res, next) => {
+  try {
+    const notifications = await Notification.find({
+      isSeen: true,
+      receiver: req.user._id,
+      notificationType: 2,
+    })
+      .sort({ createdAt: -1 })
+      .skip(req.query.skip)
+      .limit(10)
+      .populate("sender", "firstName lastName profilePic");
+
+    return res.json({
+      notifications,
+      success: "Notifications fetched successfully. ",
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+exports.markUnseenMsgsAsSeen = async (req, res, next) => {
+  try {
+    await Notification.updateMany(
+      {
+        isSeen: false,
+        receiver: req.user._id,
+        notificationType: 2,
+      },
+      { $set: { isSeen: true } }
+    );
+    return res.json({ success: "Successfully marked as seen. " });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+exports.checkExistingMsgNotif = async (req, res, next) => {
+  try {
+    const existingNotif = await Notification.findOne({
+      sender: req.user._id,
+      receiver: req.query.receiverId,
+      notificationType: 2,
+      isSeen: false,
+    });
+
+    return res.json({ existingNotif });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 exports.createNewNotification = async (req, res, next) => {
   try {
     const notification = new Notification({
       sender: req.user._id,
       receiver: req.body.receiverId,
-      type: req.body.type,
+      notificationType: req.body.type,
     });
 
-    await notification.save();
+    const savedNotification = await notification.save();
     return res.json({
+      notification: savedNotification,
       success: "Notification created successfully. ",
     });
   } catch (error) {

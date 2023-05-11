@@ -247,10 +247,34 @@ router.get(
   notificationController.getNewNotifcations
 );
 
+router.get(
+  "/notifications/newMsgNotifs",
+  passport.authenticate("jwt", { session: false }),
+  notificationController.getNewMsgNotifs
+);
+
+router.get(
+  "/notifications/oldMsgNotifs",
+  passport.authenticate("jwt", { session: false }),
+  notificationController.getOldMsgNotifs
+);
+
+router.get(
+  "/notifications/isMsgNotif",
+  passport.authenticate("jwt", { session: false }),
+  notificationController.checkExistingMsgNotif
+);
+
 router.post(
   "/notifications",
   passport.authenticate("jwt", { session: false }),
   notificationController.createNewNotification
+);
+
+router.put(
+  "/notifications/markUnseenMsgsAsSeen",
+  passport.authenticate("jwt", { session: false }),
+  notificationController.markUnseenMsgsAsSeen
 );
 
 router.put(

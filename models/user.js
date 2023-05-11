@@ -41,19 +41,6 @@ const UserSchema = new Schema(
         3, // In a relationship
       ],
     },
-    notifications: [
-      {
-        description: { type: String },
-        type: {
-          type: Number,
-          enum: [
-            0, // 0 = new friend req
-            1, // rejected request
-            2, // accepted request
-          ],
-        },
-      },
-    ],
   },
   { timestamps: true }
 );
