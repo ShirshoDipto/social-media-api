@@ -41,7 +41,7 @@ exports.googleLoginSuccess = async (req, res, next) => {
 
   const plainUserObject = new Object(req.user);
   const token = jwt.sign({ user: plainUserObject }, process.env.JWT_SECRET);
-  return res.json({ user: plainUserObject, token });
+  return res.json({ userInfo: plainUserObject, token });
 };
 
 exports.googleLogin = async (req, res, next) => {
@@ -117,7 +117,7 @@ exports.signup = [
       const plainUserObject = new Object(user);
 
       const token = jwt.sign({ user: plainUserObject }, process.env.JWT_SECRET);
-      return res.json({ user, token });
+      return res.json({ userInfo: user, token });
     } catch (err) {
       return next(err);
     }
@@ -163,7 +163,7 @@ exports.login = [
           process.env.JWT_SECRET
         );
         res.currentUser = plainUserObject;
-        return res.json({ user, token });
+        return res.json({ userInfo: user, token });
       });
     })(req, res, next);
   },
