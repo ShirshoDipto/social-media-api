@@ -47,8 +47,6 @@ passport.use(
     },
     async function (jwtPayload, cb) {
       try {
-        // const user = await User.findOne({ _id: jwtPayload.user._id });
-        // return cb(null, user);
         return cb(null, jwtPayload.user);
       } catch (err) {
         console.log(err);
@@ -92,16 +90,10 @@ passport.use(
 );
 
 passport.serializeUser(function (user, cb) {
-  // process.nextTick(function () {
-  //   cb(null, { id: user.id, username: user.username, name: user.name });
-  // });
   cb(null, user);
 });
 
 passport.deserializeUser(function (user, cb) {
-  // process.nextTick(function () {
-  //   return cb(null, user);
-  // });
   cb(null, user);
 });
 
