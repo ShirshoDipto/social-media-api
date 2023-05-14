@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-/** User related routes.  */
+/** Auth related routes.  */
 router.post("/login", userController.login);
 
 router.post("/signup", userController.signup);
@@ -34,6 +34,8 @@ router.get("/login/google/success", userController.googleLoginSuccess);
 router.get("/login/google", passport.authenticate("google"));
 
 router.get("/oauth2/redirect/google", userController.googleLogin);
+
+/** User related routes */
 
 router.get("/users/search", userController.searchUsers);
 
@@ -90,12 +92,6 @@ router.put(
   passport.authenticate("jwt", { session: false }),
   userController.removeFromFriendlist
 );
-
-// router.delete(
-//   "/users/:userId",
-//   passport.authenticate("jwt", { session: false }),
-//   userController.deleteAccount
-// );
 
 router.get("/users/:userId/posts/", userController.getUsersPosts);
 
@@ -318,9 +314,15 @@ router.put(
 // Conversation realted routes
 
 router.get(
-  "/messenger/conversations/:userId",
+  "/messenger/conversations",
   passport.authenticate("jwt", { session: false }),
   conversationController.getConversations
+);
+
+router.get(
+  "/messenger/conversations/:conversationId",
+  passport.authenticate("jwt", { session: false }),
+  conversationController.getSingleConversation
 );
 
 router.post(

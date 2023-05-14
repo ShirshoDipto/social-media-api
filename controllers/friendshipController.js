@@ -41,9 +41,9 @@ async function createFndshipAndNotif(sender, receiver, fndshipId) {
       notificationType: 0,
     });
 
-    await notification.save();
+    const savedNotif = await notification.save();
 
-    return savedFndship;
+    return { savedFndship, savedNotif };
   } catch (error) {
     throw error;
   }
@@ -74,13 +74,14 @@ exports.sendFriendRequest = async (req, res, next) => {
         .json({ error: "You are already friends with this user. " });
     }
 
-    const savedFndship = await createFndshipAndNotif(
+    const { savedFndship, savedNotif } = await createFndshipAndNotif(
       req.user._id,
       req.params.userId
     );
 
     return res.json({
       friendship: savedFndship,
+      notification: savedNotif,
       success: "Friend request sent successfully. ",
     });
   } catch (err) {
@@ -150,11 +151,17 @@ exports.rejectFriendRequest = async (req, res, next) => {
 exports.acceptFriendRequest = async (req, res, next) => {
   try {
     const friendship = await Friendship.findById(req.params.friendshipId);
+
+    if (!friendship) {
+      return res.status(404).json({ error: "Friendship not found." });
+    }
+
     const reqSender = await User.findById(friendship.requester);
     const reqRecipient = await User.findById(req.user._id);
     const notification = await Notification.findOne({
       friendshipId: friendship._id,
     });
+
     notification.notificationType = 1;
     notification.receiver = friendship.requester;
     notification.sender = req.user._id;
@@ -166,14 +173,18 @@ exports.acceptFriendRequest = async (req, res, next) => {
     }
 
     friendship.status = 1;
-    await Promise.all([
+    const results = await Promise.all([
       friendship.save(),
       reqRecipient.updateOne({ $push: { friends: friendship.requester } }),
       reqSender.updateOne({ $push: { friends: friendship.recipient } }),
       notification.save(),
     ]);
 
-    return res.json({ success: "Friend request accepted successfully. " });
+    return res.json({
+      friendship: results[0],
+      notification: results[3],
+      success: "Friend request accepted successfully. ",
+    });
   } catch (err) {
     return next(err);
   }

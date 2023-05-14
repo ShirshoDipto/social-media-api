@@ -390,7 +390,6 @@ exports.updateUser = async (req, res, next) => {
     user.relationship = req.body.relationship;
 
     const savedUser = await user.save();
-    console.log(savedUser);
     return res.json({
       user: savedUser,
       success: "User account updated successfully. ",

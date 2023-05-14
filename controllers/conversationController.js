@@ -1,5 +1,3 @@
-const User = require("../models/user");
-const Message = require("../models/message");
 const Conversation = require("../models/conversation");
 
 exports.getConversations = async (req, res, next) => {
@@ -12,6 +10,25 @@ exports.getConversations = async (req, res, next) => {
 
     return res.json({
       conversations,
+      success: "Conversations fetched successfully. ",
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+exports.getSingleConversation = async (req, res, next) => {
+  try {
+    const conversation = await Conversation.findById(
+      req.params.conversationId
+    ).populate("members", "firstName lastName profilePic");
+
+    if (!conversation) {
+      return res.status(404).json({ error: "Conversation not found." });
+    }
+
+    return res.json({
+      conversation,
       success: "Conversations fetched successfully. ",
     });
   } catch (error) {
@@ -32,6 +49,7 @@ exports.createConversation = async (req, res, next) => {
       "members",
       "firstName lastName profilePic"
     );
+
     return res.json({
       conversation: newConv,
       success: "Conversation created successfully. ",
