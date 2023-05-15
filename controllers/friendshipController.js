@@ -24,7 +24,7 @@ exports.getFriendshipStatus = async (req, res, next) => {
   }
 };
 
-async function createFndshipAndNotif(sender, receiver, fndshipId) {
+async function createFndshipAndNotif(sender, receiver) {
   try {
     const friendship = new Friendship({
       requester: sender,
@@ -45,7 +45,7 @@ async function createFndshipAndNotif(sender, receiver, fndshipId) {
 
     return { savedFndship, savedNotif };
   } catch (error) {
-    throw error;
+    console.log(error);
   }
 }
 
@@ -154,6 +154,12 @@ exports.acceptFriendRequest = async (req, res, next) => {
 
     if (!friendship) {
       return res.status(404).json({ error: "Friendship not found." });
+    }
+
+    if (friendship.status === 1) {
+      return res
+        .status(403)
+        .json({ error: "You are already friends with this user." });
     }
 
     const reqSender = await User.findById(friendship.requester);
