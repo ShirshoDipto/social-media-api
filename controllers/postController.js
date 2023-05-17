@@ -8,11 +8,10 @@ const path = require("path");
 
 exports.getAllPosts = async (req, res, next) => {
   try {
-    const page = req.query.page;
     // newest to oldest
     const allPosts = await Post.find({})
       .sort({ $natural: -1 })
-      .skip(10 * page)
+      .skip(req.query.skip)
       .limit(10)
       .populate("author", "firstName lastName profilePic");
 

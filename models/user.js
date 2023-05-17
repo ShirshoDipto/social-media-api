@@ -4,13 +4,36 @@ const Schema = mongoose.Schema;
 
 const UserSchema = new Schema(
   {
-    firstName: { type: String, required: true },
-    lastName: { type: String, required: true },
-    email: { type: String, required: true },
-    password: { type: String, required: true },
-    profilePic: { type: String, default: "" },
-    coverPic: { type: String, default: "" },
-    friends: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    firstName: {
+      type: String,
+      required: true,
+    },
+    lastName: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    profilePic: {
+      type: String,
+      default: "",
+    },
+    coverPic: {
+      type: String,
+      default: "",
+    },
+    friends: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     desc: {
       type: String,
       max: 50,
