@@ -6,6 +6,8 @@ const passport = require("passport");
 var logger = require("morgan");
 const session = require("express-session");
 const cors = require("cors");
+const compression = require("compression");
+const helmet = require("helmet");
 require("dotenv").config();
 require("./passport");
 
@@ -17,7 +19,11 @@ const messengerRouter = require("./routes/messenger");
 const app = express();
 app.use(
   cors({
-    origin: [process.env.CLIENT_URI, process.env.SOCKET_URI], // have to change this later on
+    origin: [
+      process.env.CLIENT_URI,
+      process.env.SOCKET_URI,
+      "http://localhost:3000",
+    ],
     credentials: true,
   })
 );
@@ -38,6 +44,13 @@ connectToMongoDb().catch((err) => {
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
+
+app.use(compression());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+  })
+);
 
 app.use(
   session({
