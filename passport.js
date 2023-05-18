@@ -61,7 +61,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "/api/oauth2/redirect/google",
+      callbackURL: "/api/users/oauth2/redirect/google",
       scope: ["profile", "email"],
     },
     async function verify(issuer, profile, cb) {
@@ -96,10 +96,3 @@ passport.serializeUser(function (user, cb) {
 passport.deserializeUser(function (user, cb) {
   cb(null, user);
 });
-
-// {
-//   id: '112222569259052241411',
-//   displayName: 'Muhammad Adhi',
-//   name: { familyName: 'Adhi', givenName: 'Muhammad' },
-//   emails: [ { value: 'mohammadadhi.ma@gmail.com' } ]
-// }

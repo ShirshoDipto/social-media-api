@@ -9,16 +9,19 @@ const cors = require("cors");
 require("dotenv").config();
 require("./passport");
 
-var indexRouter = require("./routes/index");
-var usersRouter = require("./routes/users");
+const homeRouter = require("./routes/home");
+const userRouter = require("./routes/users");
+const notificationRouter = require("./routes/notifications");
+const messengerRouter = require("./routes/messenger");
 
-var app = express();
+const app = express();
 app.use(
   cors({
     origin: [process.env.CLIENT_URI, process.env.SOCKET_URI], // have to change this later on
     credentials: true,
   })
 );
+
 const mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
 const mongoDbUri = process.env.MONGODB_URI;
@@ -54,8 +57,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use("/api", indexRouter);
-app.use("/users", usersRouter);
+app.use("/api/home", homeRouter);
+app.use("/api/users", userRouter);
+app.use("/api/notifications", notificationRouter);
+app.use("/api/messenger", messengerRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -70,7 +75,7 @@ app.use(function (err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.json({ error: err.message, message: "Did you check your URL?" });
+  res.json({ error: err.message });
 });
 
 module.exports = app;
