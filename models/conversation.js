@@ -21,6 +21,10 @@ const ConversationSchema = new Schema(
         numUnseen: { type: Number, default: 0 },
       },
     ],
+    isTemp: {
+      type: Boolean,
+      default: true,
+    },
   },
   { timestamps: true }
 );

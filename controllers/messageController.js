@@ -76,6 +76,11 @@ exports.createMessage = async (req, res, next) => {
 
     const conversation = await Conversation.findById(req.body.conversationId);
     conversation.lastMsg = req.body.content;
+
+    if (conversation.isTemp) {
+      conversation.isTemp = false;
+    }
+
     if (req.body.seenBy.length === 1) {
       conversation.unseenMsgs.forEach((msg) => {
         if (msg.userId.toString() !== req.body.sender.toString()) {
