@@ -5,6 +5,7 @@ var cookieParser = require("cookie-parser");
 const passport = require("passport");
 var logger = require("morgan");
 const session = require("express-session");
+const sessionStore = require("./session");
 const cors = require("cors");
 const compression = require("compression");
 const helmet = require("helmet");
@@ -19,27 +20,10 @@ const messengerRouter = require("./routes/messenger");
 const app = express();
 app.use(
   cors({
-    origin: [
-      process.env.CLIENT_URI,
-      process.env.SOCKET_URI,
-      "http://localhost:3000",
-    ],
+    origin: [process.env.CLIENT_URI, process.env.SOCKET_URI],
     credentials: true,
   })
 );
-
-const mongoose = require("mongoose");
-mongoose.set("strictQuery", false);
-const mongoDbUri = process.env.MONGODB_URI;
-
-async function connectToMongoDb() {
-  await mongoose.connect(mongoDbUri, { autoIndex: false });
-  console.log("Database connection successful!!");
-}
-
-connectToMongoDb().catch((err) => {
-  console.log(err);
-});
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -57,6 +41,10 @@ app.use(
     secret: "keyboard cat",
     resave: false,
     saveUninitialized: true,
+    store: sessionStore,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24, // session expiration time
+    },
   })
 );
 
