@@ -35,11 +35,12 @@ exports.logout = async (req, res, next) => {
 };
 
 exports.googleLoginSuccess = async (req, res, next) => {
-  if (!req.user) {
+  const user = await User.findById(req.query.userId);
+  if (!user) {
     return res.status(401).json({ error: "Google authentication failed." });
   }
 
-  const plainUserObject = new Object(req.user);
+  const plainUserObject = new Object(user);
   const token = jwt.sign({ user: plainUserObject }, process.env.JWT_SECRET);
   return res.json({ userInfo: plainUserObject, token });
 };
@@ -56,7 +57,7 @@ exports.googleLogin = async (req, res, next) => {
       if (err) {
         return next(err);
       }
-      return res.redirect(`${process.env.CLIENT_URI}/?google=1`);
+      return res.redirect(`${process.env.CLIENT_URI}?google=${user._id}`);
     });
   })(req, res, next);
 };
@@ -192,16 +193,7 @@ exports.searchUsers = async (req, res, next) => {
 
 exports.removeFromFriendlist = async (req, res, next) => {
   try {
-    const friendship = await Friendship.findOne({
-      $or: [
-        {
-          $and: [{ requester: req.user._id }, { recipient: req.params.userId }],
-        },
-        {
-          $and: [{ requester: req.params.userId }, { recipient: req.user._id }],
-        },
-      ],
-    });
+    const friendship = await Friendship.findById(req.params.friendshipId);
 
     if (!friendship) {
       return res.status(404).json({ error: "Friendship not found. " });
@@ -240,6 +232,24 @@ exports.getUsersPosts = async (req, res, next) => {
   }
 };
 
+exports.getUserFriends = async (req, res, next) => {
+  try {
+    const friends = await User.find(
+      {
+        _id: [...req.user.friends],
+      },
+      "firstName lastName profilePic"
+    );
+
+    return res.json({
+      friends,
+      success: "Successfully fethced user friends",
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 exports.getSingleUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.userId).populate(
@@ -258,7 +268,11 @@ exports.getSingleUser = async (req, res, next) => {
 };
 
 async function deleteImage(imgName) {
-  await fs.unlink(path.join(__dirname + `/../public/images/${imgName}`));
+  try {
+    await fs.unlink(path.join(__dirname + `/../public/images/${imgName}`));
+  } catch (error) {
+    return false;
+  }
 }
 
 exports.addUserProfilePic = async (req, res, next) => {

@@ -83,7 +83,7 @@ router.put(
 );
 
 router.put(
-  "/:userId/friends",
+  "/:userId/friends/:friendshipId",
   passport.authenticate("jwt", { session: false }),
   userController.removeFromFriendlist
 );

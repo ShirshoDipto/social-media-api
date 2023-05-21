@@ -147,8 +147,12 @@ async function deleteAllComments(id) {
 }
 
 async function deletePostImage(post) {
-  if (post.image) {
-    await fs.unlink(path.join(__dirname + `/../public/images/${post.image}`));
+  try {
+    if (post.image) {
+      await fs.unlink(path.join(__dirname + `/../public/images/${post.image}`));
+    }
+  } catch (error) {
+    return false;
   }
 }
 

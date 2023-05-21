@@ -24,6 +24,28 @@ exports.getFriendshipStatus = async (req, res, next) => {
   }
 };
 
+exports.getUserFriends = async (req, res, next) => {
+  try {
+    const friends = await Friendship.find({
+      $and: [
+        {
+          $or: [{ requester: req.user._id }, { recipient: req.user._id }],
+        },
+        {
+          status: 1,
+        },
+      ],
+    }).populate("requester recipient", "firstName lastName profilePic");
+
+    return res.json({
+      friends,
+      success: "Successfully fethced user friends",
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 async function createFndshipAndNotif(sender, receiver) {
   try {
     const friendship = new Friendship({
