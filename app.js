@@ -22,7 +22,9 @@ app.use(
   cors({
     origin: [
       process.env.CLIENT_URI,
+      process.env.CLIENT_URI_LOCAL,
       process.env.SOCKET_URI,
+      process.env.SOCKET_URI_LOCAL,
       process.env.SERVER_URI,
     ],
     credentials: true,
