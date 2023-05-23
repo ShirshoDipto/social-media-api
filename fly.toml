@@ -1,4 +1,4 @@
-# fly.toml app configuration file generated for nosebook-api on 2023-05-21T10:30:41+06:00
+# fly.toml app configuration file generated for nosebook-api on 2023-05-23T21:46:43+06:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
@@ -7,7 +7,7 @@ app = "nosebook-api"
 primary_region = "sin"
 
 [http_service]
-  internal_port = 3000
+  internal_port = 5000
   force_https = true
   auto_start_machines = true
   min_machines_running = 0
