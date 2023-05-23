@@ -5,7 +5,7 @@ var cookieParser = require("cookie-parser");
 const passport = require("passport");
 var logger = require("morgan");
 const session = require("express-session");
-const sessionStore = require("./session");
+const sessionStore = require("./db/session");
 const cors = require("cors");
 const compression = require("compression");
 const helmet = require("helmet");
@@ -52,7 +52,7 @@ app.use(passport.authenticate("session"));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// app.use(logger("dev"));
+app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());

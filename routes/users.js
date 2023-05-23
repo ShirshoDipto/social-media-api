@@ -3,18 +3,7 @@ const router = express.Router();
 const passport = require("passport");
 const userController = require("../controllers/userController");
 const friendshipController = require("../controllers/friendshipController");
-const multer = require("multer");
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "public/images");
-  },
-  filename: function (req, file, cb) {
-    cb(null, req.body.imageName);
-  },
-});
-
-const upload = multer({ storage: storage });
+const upload = require("../middlewares/multerMiddleware");
 
 /** Auth related routes.  */
 
@@ -37,47 +26,7 @@ router.get("/search", userController.searchUsers);
 router.get("/:userId", userController.getSingleUser);
 
 router.put(
-  "/:userId/profilePic",
-  upload.single("image"),
-  passport.authenticate("jwt", { session: false }),
-  userController.replaceUserProfilePic
-);
-
-router.post(
-  "/:userId/profilePic",
-  upload.single("image"),
-  passport.authenticate("jwt", { session: false }),
-  userController.addUserProfilePic
-);
-
-router.delete(
-  "/:userId/profilePic",
-  passport.authenticate("jwt", { session: false }),
-  userController.deleteUserProfilePic
-);
-
-router.post(
-  "/:userId/coverPic",
-  upload.single("image"),
-  passport.authenticate("jwt", { session: false }),
-  userController.addUserCoverPic
-);
-
-router.delete(
-  "/:userId/coverPic",
-  passport.authenticate("jwt", { session: false }),
-  userController.deleteUserCoverPic
-);
-
-router.put(
-  "/:userId/coverPic",
-  upload.single("image"),
-  passport.authenticate("jwt", { session: false }),
-  userController.replaceUserCoverPic
-);
-
-router.put(
-  "/:userId/userBio",
+  "/:userId",
   passport.authenticate("jwt", { session: false }),
   userController.updateUser
 );
@@ -88,7 +37,27 @@ router.put(
   userController.removeFromFriendlist
 );
 
-router.get("/:userId/posts/", userController.getUsersPosts);
+router.get("/:userId/posts", userController.getUsersPosts);
+
+router.put(
+  "/:userId/pic",
+  upload.single("image"),
+  passport.authenticate("jwt", { session: false }),
+  userController.replacePic
+);
+
+router.post(
+  "/:userId/pic",
+  upload.single("image"),
+  passport.authenticate("jwt", { session: false }),
+  userController.addPic
+);
+
+router.delete(
+  "/:userId/pic",
+  passport.authenticate("jwt", { session: false }),
+  userController.deletePic
+);
 
 /** friendship related routes */
 

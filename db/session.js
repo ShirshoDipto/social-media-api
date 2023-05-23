@@ -1,7 +1,6 @@
 const session = require("express-session");
 const MongoDBStore = require("connect-mongodb-session")(session);
 const db = require("./db");
-require("dotenv").config();
 
 const mongoDbUri = process.env.MONGODB_URI;
 

@@ -10,6 +10,8 @@ exports.getAllComments = async (req, res, next) => {
       .sort({
         $natural: -1,
       })
+      .skip(req.query.skip)
+      .limit(10)
       .populate("author", "firstName lastName profilePic");
 
     return res.json({ comments });

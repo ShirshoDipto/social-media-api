@@ -3,8 +3,7 @@ const User = require("../models/user");
 const Comment = require("../models/comment");
 const Like = require("../models/like");
 const { body, validationResult } = require("express-validator");
-const fs = require("fs/promises");
-const path = require("path");
+const { uploadImage, deleteImage } = require("../utils/cloudinaryUtil");
 
 exports.getAllPosts = async (req, res, next) => {
   try {
@@ -58,20 +57,19 @@ exports.searchPosts = async (req, res, next) => {
 };
 
 exports.createPost = [
-  body("content", "Content field cannot be empty. ")
-    .trim()
-    .isLength({ min: 1 }),
+  body("content", "Post cannot be empty ").trim().isLength({ min: 1 }),
 
   async (req, res, next) => {
     try {
       const errors = validationResult(req);
-      if (!errors.isEmpty()) {
+      if (!errors.isEmpty() && !req.file) {
         return res.status(400).json({ errors: errors.array() });
       }
 
       let imageName;
       if (req.file) {
-        imageName = req.body.imageName;
+        const data = await uploadImage(req.file.buffer, req.body.imageName);
+        imageName = data.secure_url;
       }
 
       const post = new Post({
@@ -104,35 +102,25 @@ exports.getSinglePost = async (req, res, next) => {
   }
 };
 
-exports.updatePost = [
-  body("content", "Content field cannot be empty. ")
-    .trim()
-    .isLength({ min: 1 }),
-
-  async (req, res, next) => {
-    const post = await Post.findById(req.params.postId);
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-      }
-      if (req.user._id.toString() !== post.author.toString()) {
-        return res
-          .status(403)
-          .json({ error: "You can only update your own post. " });
-      }
-
-      post.content = req.body.content;
-      await post.save();
-
-      return res.json({
-        success: "Post updated successfully. ",
-      });
-    } catch (err) {
-      return next(err);
+exports.updatePost = async (req, res, next) => {
+  const post = await Post.findById(req.params.postId);
+  try {
+    if (req.user._id.toString() !== post.author.toString()) {
+      return res
+        .status(403)
+        .json({ error: "You can only update your own post. " });
     }
-  },
-];
+
+    post.content = req.body.content;
+    await post.save();
+
+    return res.json({
+      success: "Post updated successfully. ",
+    });
+  } catch (err) {
+    return next(err);
+  }
+};
 
 async function deleteAllComments(id) {
   const allComments = await Comment.find({ postId: id });
@@ -149,7 +137,7 @@ async function deleteAllComments(id) {
 async function deletePostImage(post) {
   try {
     if (post.image) {
-      await fs.unlink(path.join(__dirname + `/../public/images/${post.image}`));
+      await deleteImage(post.imgae);
     }
   } catch (error) {
     return false;

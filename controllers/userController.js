@@ -5,8 +5,9 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 const Post = require("../models/post");
 const Friendship = require("../models/friendship");
-const fs = require("fs/promises");
-const path = require("path");
+const { uploadImage, deleteImage } = require("../utils/cloudinaryUtil");
+
+const tempUsers = {};
 
 function makeErrorObject(errorArray) {
   const errObj = {};
@@ -35,13 +36,14 @@ exports.logout = async (req, res, next) => {
 };
 
 exports.googleLoginSuccess = async (req, res, next) => {
-  const user = await User.findById(req.query.userId);
+  const user = tempUsers[req.query.userId];
   if (!user) {
     return res.status(401).json({ error: "Google authentication failed." });
   }
 
-  const plainUserObject = new Object(user);
+  const plainUserObject = JSON.parse(JSON.stringify(user));
   const token = jwt.sign({ user: plainUserObject }, process.env.JWT_SECRET);
+  delete tempUsers[user._id];
   return res.json({ userInfo: plainUserObject, token });
 };
 
@@ -57,6 +59,7 @@ exports.googleLogin = async (req, res, next) => {
       if (err) {
         return next(err);
       }
+      tempUsers[user._id] = user;
       return res.redirect(`${process.env.CLIENT_URI}?google=${user._id}`);
     });
   })(req, res, next);
@@ -267,84 +270,42 @@ exports.getSingleUser = async (req, res, next) => {
   }
 };
 
-async function deleteImage(imgName) {
-  try {
-    await fs.unlink(path.join(__dirname + `/../public/images/${imgName}`));
-  } catch (error) {
-    return false;
-  }
-}
-
-exports.addUserProfilePic = async (req, res, next) => {
+exports.addPic = async (req, res, next) => {
   try {
     if (req.user._id.toString() !== req.params.userId.toString()) {
-      await deleteImage(req.body.imageName);
       return res
         .status(403)
         .json({ error: "You can only update own account info. " });
     }
 
-    return res.json({ success: "Profile pic added successfully. " });
+    const data = await uploadImage(req.file.buffer, req.body.imageName);
+    return res.json({
+      imageUrl: data.secure_url,
+      success: "Picture added successfully. ",
+    });
   } catch (error) {
     return next(error);
   }
 };
 
-exports.deleteUserProfilePic = async (req, res, next) => {
+exports.deletePic = async (req, res, next) => {
   try {
+    console.log(req.user._id, req.params.userId);
     if (req.user._id.toString() !== req.params.userId.toString()) {
       return res
         .status(403)
         .json({ error: "You can only update own account info. " });
     }
 
-    const user = await User.findById(req.user._id);
-    await deleteImage(user.profilePic);
-    user.profilePic = "";
-    await user.save();
+    await deleteImage(req.body.imageUrl);
 
-    return res.json({ success: "Successfully deleted profile picture. " });
+    return res.json({ success: "Successfully deleted picture. " });
   } catch (error) {
     return next(error);
   }
 };
 
-exports.replaceUserProfilePic = async (req, res, next) => {
-  try {
-    if (req.user._id.toString() !== req.params.userId.toString()) {
-      await deleteImage(req.body.imageName);
-      return res
-        .status(403)
-        .json({ error: "You can only update own account info. " });
-    }
-
-    const user = await User.findById(req.user._id);
-    await deleteImage(user.profilePic);
-    user.profilePic = req.body.imageName;
-    await user.save();
-
-    return res.json({ success: "Profile Pic replaced successfully. " });
-  } catch (error) {
-    return next(error);
-  }
-};
-
-exports.addUserCoverPic = async (req, res, next) => {
-  try {
-    if (req.user._id.toString() !== req.params.userId.toString()) {
-      await deleteImage(req.body.imageName);
-      return res
-        .status(403)
-        .json({ error: "You can only update own account info. " });
-    }
-
-    return res.json({ success: "Cover pic added successfully. " });
-  } catch (error) {
-    return next(error);
-  }
-};
-
-exports.deleteUserCoverPic = async (req, res, next) => {
+exports.replacePic = async (req, res, next) => {
   try {
     if (req.user._id.toString() !== req.params.userId.toString()) {
       return res
@@ -352,32 +313,15 @@ exports.deleteUserCoverPic = async (req, res, next) => {
         .json({ error: "You can only update own account info. " });
     }
 
-    const user = await User.findById(req.user._id);
-    await deleteImage(user.coverPic);
-    user.coverPic = "";
-    await user.save();
+    const results = await Promise.all([
+      uploadImage(req.file.buffer, req.body.imageName),
+      deleteImage(req.body.existingImageUrl),
+    ]);
 
-    return res.json({ success: "Successfully deleted cover picture. " });
-  } catch (error) {
-    return next(error);
-  }
-};
-
-exports.replaceUserCoverPic = async (req, res, next) => {
-  try {
-    if (req.user._id.toString() !== req.params.userId.toString()) {
-      await deleteImage(req.body.imageName);
-      return res
-        .status(403)
-        .json({ error: "You can only update own account info. " });
-    }
-
-    const user = await User.findById(req.user._id);
-    await deleteImage(user.coverPic);
-    user.coverPic = req.body.imageName;
-    await user.save();
-
-    return res.json({ success: "Cover Pic replaced successfully. " });
+    return res.json({
+      imageUrl: results[0].secure_url,
+      success: "Profile Pic replaced successfully. ",
+    });
   } catch (error) {
     return next(error);
   }
