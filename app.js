@@ -20,7 +20,11 @@ const messengerRouter = require("./routes/messenger");
 const app = express();
 app.use(
   cors({
-    origin: [process.env.CLIENT_URI, process.env.SOCKET_URI],
+    origin: [
+      process.env.CLIENT_URI,
+      process.env.SOCKET_URI,
+      process.env.SERVER_URI,
+    ],
     credentials: true,
   })
 );
