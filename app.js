@@ -9,6 +9,7 @@ const sessionStore = require("./db/session");
 const cors = require("cors");
 const compression = require("compression");
 const helmet = require("helmet");
+const fetch = require("cross-fetch");
 require("dotenv").config();
 require("./passport");
 
@@ -30,6 +31,15 @@ app.use(
     credentials: true,
   })
 );
+
+// Ping system to wakeup server
+app.get("/wakeup", (req, res, next) => {
+  console.log("Server is awake...");
+});
+
+setInterval(async () => {
+  const res = await fetch(`${process.env.SERVER_URI}/wakeup`);
+}, 60 * 1000);
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));

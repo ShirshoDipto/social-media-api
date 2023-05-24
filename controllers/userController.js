@@ -7,7 +7,7 @@ const Post = require("../models/post");
 const Friendship = require("../models/friendship");
 const { uploadImage, deleteImage } = require("../utils/cloudinaryUtil");
 
-// const tempUsers = {};
+const tempUsers = {};
 
 function makeErrorObject(errorArray) {
   const errObj = {};
@@ -36,16 +36,16 @@ exports.logout = async (req, res, next) => {
 };
 
 exports.googleLoginSuccess = async (req, res, next) => {
-  // const user = tempUsers[req.query.userId];
-  const user = await User.findById(req.query.userId);
+  const user = tempUsers[req.query.userId];
+  // const user = await User.findById(req.query.userId);
   if (!user) {
     return res.status(401).json({ error: "Google authentication failed." });
   }
 
-  // const plainUserObject = JSON.parse(JSON.stringify(user));
-  const plainUserObject = new Object(user);
+  const plainUserObject = JSON.parse(JSON.stringify(user));
+  // const plainUserObject = new Object(user);
   const token = jwt.sign({ user: plainUserObject }, process.env.JWT_SECRET);
-  // delete tempUsers[user._id];
+  delete tempUsers[user._id];
   return res.json({ userInfo: plainUserObject, token });
 };
 
