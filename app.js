@@ -32,15 +32,6 @@ app.use(
   })
 );
 
-// Ping system to wakeup server
-app.get("/wakeup", (req, res, next) => {
-  console.log("Server is awake...");
-});
-
-setInterval(async () => {
-  const res = await fetch(`${process.env.SERVER_URI}/wakeup`);
-}, 60 * 1000);
-
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
@@ -58,9 +49,6 @@ app.use(
     resave: false,
     saveUninitialized: true,
     store: sessionStore,
-    cookie: {
-      maxAge: 1000 * 60 * 60 * 24, // session expiration time
-    },
   })
 );
 
