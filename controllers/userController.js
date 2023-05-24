@@ -7,8 +7,6 @@ const Post = require("../models/post");
 const Friendship = require("../models/friendship");
 const { uploadImage, deleteImage } = require("../utils/cloudinaryUtil");
 
-// const tempUsers = {};
-
 function makeErrorObject(errorArray) {
   const errObj = {};
   errorArray.forEach((err) => {
@@ -36,16 +34,14 @@ exports.logout = async (req, res, next) => {
 };
 
 exports.googleLoginSuccess = async (req, res, next) => {
-  // const user = tempUsers[req.query.userId];
   const user = await User.findById(req.query.userId);
   if (!user) {
     return res.status(401).json({ error: "Google authentication failed." });
   }
 
-  const plainUserObject = JSON.parse(JSON.stringify(user));
+  const plainUserObject = new Object(user);
   const token = jwt.sign({ user: plainUserObject }, process.env.JWT_SECRET);
-  // delete tempUsers[user._id];
-  return res.json({ userInfo: plainUserObject, token });
+  return res.json({ userInfo: user, token });
 };
 
 exports.googleLogin = async (req, res, next) => {
@@ -60,7 +56,6 @@ exports.googleLogin = async (req, res, next) => {
       if (err) {
         return next(err);
       }
-      tempUsers[user._id] = user;
       return res.redirect(`${process.env.CLIENT_URI}?google=${user._id}`);
     });
   })(req, res, next);
@@ -117,8 +112,8 @@ exports.signup = [
         email: req.body.email,
         password: hashedPassword,
       });
-      await user.save();
 
+      await user.save();
       const plainUserObject = new Object(user);
 
       const token = jwt.sign({ user: plainUserObject }, process.env.JWT_SECRET);
