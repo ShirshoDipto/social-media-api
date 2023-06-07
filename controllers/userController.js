@@ -105,6 +105,7 @@ exports.signup = [
             "User already exists. Try Logging in. Or did you log in with Google?",
         });
       }
+
       const hashedPassword = await bcrypt.hash(req.body.confirmPassword, 10);
       const user = new User({
         firstName: req.body.firstName,
@@ -273,7 +274,6 @@ exports.addPic = async (req, res, next) => {
         .status(403)
         .json({ error: "You can only update own account info. " });
     }
-
     const data = await uploadImage(req.file.buffer, req.body.imageName);
     return res.json({
       imageUrl: data.secure_url,
@@ -286,7 +286,6 @@ exports.addPic = async (req, res, next) => {
 
 exports.deletePic = async (req, res, next) => {
   try {
-    console.log(req.user._id, req.params.userId);
     if (req.user._id.toString() !== req.params.userId.toString()) {
       return res
         .status(403)
@@ -308,12 +307,10 @@ exports.replacePic = async (req, res, next) => {
         .status(403)
         .json({ error: "You can only update own account info. " });
     }
-
     const results = await Promise.all([
       uploadImage(req.file.buffer, req.body.imageName),
       deleteImage(req.body.existingImageUrl),
     ]);
-
     return res.json({
       imageUrl: results[0].secure_url,
       success: "Profile Pic replaced successfully. ",

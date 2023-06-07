@@ -1,3 +1,5 @@
+require("dotenv").config();
+require("./passport");
 var createError = require("http-errors");
 var express = require("express");
 var path = require("path");
@@ -9,9 +11,6 @@ const sessionStore = require("./db/session");
 const cors = require("cors");
 const compression = require("compression");
 const helmet = require("helmet");
-const fetch = require("cross-fetch");
-require("dotenv").config();
-require("./passport");
 
 const homeRouter = require("./routes/home");
 const userRouter = require("./routes/users");

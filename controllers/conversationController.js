@@ -41,8 +41,7 @@ exports.getSingleConversation = async (req, res, next) => {
 exports.createConversation = async (req, res, next) => {
   try {
     const existingConv = await Conversation.findOne({
-      members: { $in: [req.user._id] },
-      members: { $in: [req.body.userId] },
+      members: [req.user._id, req.body.userId],
       isTemp: true,
     }).populate("members", "firstName lastName profilePic");
 

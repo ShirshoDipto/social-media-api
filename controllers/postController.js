@@ -65,21 +65,17 @@ exports.createPost = [
       if (!errors.isEmpty() && !req.file) {
         return res.status(400).json({ errors: errors.array() });
       }
-
       let imageName;
       if (req.file) {
         const data = await uploadImage(req.file.buffer, req.body.imageName);
         imageName = data.secure_url;
       }
-
       const post = new Post({
         content: req.body.content,
         image: imageName,
         author: req.user._id,
       });
-
       const savedPost = await post.save();
-
       return res.json({
         post: savedPost,
         success: "Post created successfully. ",
