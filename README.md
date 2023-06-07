@@ -43,7 +43,7 @@ CLOUD_NAME = <A cloud name achieved from cloudinary account>
 
 CLOUD_API_KEY = <A cloud api key achieved from cloudinary account>
 
-CLOUD_API_SECRET = <A cloud api key achieved from cloudinary account>
+CLOUD_API_SECRET = <A cloud api secret achieved from cloudinary account>
 ```
 
 ### Install packages and start server
