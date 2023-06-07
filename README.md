@@ -1,6 +1,6 @@
 # NoseBook API
 
-This is the api for the NoseBook app, a Facebook clone.
+This is the api for the NoseBook app.
 
 [Front-end repository](https://github.com/ShirshoDipto/social-media-client)
 
