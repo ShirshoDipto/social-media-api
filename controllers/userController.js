@@ -172,19 +172,26 @@ exports.login = [
 
 exports.searchUsers = async (req, res, next) => {
   try {
-    const searchTexts = req.query.text.replace(/%20/g, " ").split("@")[0];
-    // const searchResult = await User.find(
-    //   { $text: { $search: `\"${searchTexts}\"` } }, // exact search (AND)
-    //   { score: { $meta: "textScore" } }
-    // ).sort({ score: { $meta: "textScore" } });
+    const searchTexts = req.query.text;
+    let searchResult;
 
-    const searchResult = await User.find(
-      { $text: { $search: `${searchTexts}` } }, // OR search
-      { score: { $meta: "textScore" } }
-    )
-      .sort({ score: { $meta: "textScore" } })
-      .select("firstName lastName profilePic");
-
+    // console.log(searchTexts);
+    // .replace(/%20/g, " ").split("@")[0];
+    if (searchTexts.includes("@")) {
+      searchResult = await User.find(
+        { $text: { $search: `\"${searchTexts}\"` } }, // exact search (AND)
+        { score: { $meta: "textScore" } }
+      )
+        .sort({ score: { $meta: "textScore" } })
+        .select("firstName lastName profilePic");
+    } else {
+      searchResult = await User.find(
+        { $text: { $search: `${searchTexts}` } }, // OR search
+        { score: { $meta: "textScore" } }
+      )
+        .sort({ score: { $meta: "textScore" } })
+        .select("firstName lastName profilePic");
+    }
     return res.json({ searchResult });
   } catch (err) {
     return next(err);
@@ -274,6 +281,7 @@ exports.addPic = async (req, res, next) => {
         .status(403)
         .json({ error: "You can only update own account info. " });
     }
+
     const data = await uploadImage(req.file.buffer, req.body.imageName);
     return res.json({
       imageUrl: data.secure_url,
@@ -311,6 +319,7 @@ exports.replacePic = async (req, res, next) => {
       uploadImage(req.file.buffer, req.body.imageName),
       deleteImage(req.body.existingImageUrl),
     ]);
+
     return res.json({
       imageUrl: results[0].secure_url,
       success: "Profile Pic replaced successfully. ",
