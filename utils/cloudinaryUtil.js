@@ -34,16 +34,22 @@ exports.deleteImage = (fullurl) => {
   return result;
 };
 
-exports.getResized = (imageName) => {
-  return cloudinary.url(imageName, {
-    width: "300",
-    height: "300",
-    crop: "fill",
-    quality: "auto",
-  });
+exports.getResizedAndOptimized = (imageName, w, h) => {
+  const urlArray = imageName.split("/");
+  urlArray.splice(urlArray.length - 2, 0, `c_fill,w_${w},h_${h},f_auto,q_auto`);
+  const newImageUrl = urlArray.join("/");
+  return newImageUrl;
+  // return cloudinary.url(imageName, {
+  //   width: "300",
+  //   height: "300",
+  //   crop: "fill",
+  //   quality: "auto",
+  // });
 };
 
-// const urlArray = data.secure_url.split("/");
-// urlArray.splice(urlArray.length - 2, 0, "c_scale,w_1024");
-// imageName = urlArray.join("/");
-// imageName = getResized(req.body.imageName);
+exports.getOptimized = (imageName) => {
+  const urlArray = imageName.split("/");
+  urlArray.splice(urlArray.length - 2, 0, "w_1000/f_auto,q_auto");
+  const newImageUrl = urlArray.join("/");
+  return newImageUrl;
+};

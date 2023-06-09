@@ -5,7 +5,12 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 const Post = require("../models/post");
 const Friendship = require("../models/friendship");
-const { uploadImage, deleteImage } = require("../utils/cloudinaryUtil");
+const {
+  uploadImage,
+  deleteImage,
+  getResizedAndOptimized,
+  getOptimized,
+} = require("../utils/cloudinaryUtil");
 
 function makeErrorObject(errorArray) {
   const errObj = {};
@@ -283,8 +288,14 @@ exports.addPic = async (req, res, next) => {
     }
 
     const data = await uploadImage(req.file.buffer, req.body.imageName);
+    const imageUrl = getResizedAndOptimized(
+      data.secure_url,
+      req.body.type === "p" ? 500 : 1000,
+      500
+    );
+
     return res.json({
-      imageUrl: data.secure_url,
+      imageUrl,
       success: "Picture added successfully. ",
     });
   } catch (error) {
@@ -320,8 +331,14 @@ exports.replacePic = async (req, res, next) => {
       deleteImage(req.body.existingImageUrl),
     ]);
 
+    const imageUrl = getResizedAndOptimized(
+      results[0].secure_url,
+      req.body.type === "p" ? 500 : 1000,
+      500
+    );
+
     return res.json({
-      imageUrl: results[0].secure_url,
+      imageUrl,
       success: "Profile Pic replaced successfully. ",
     });
   } catch (error) {

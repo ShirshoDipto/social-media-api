@@ -3,7 +3,11 @@ const User = require("../models/user");
 const Comment = require("../models/comment");
 const Like = require("../models/like");
 const { body, validationResult } = require("express-validator");
-const { uploadImage, deleteImage } = require("../utils/cloudinaryUtil");
+const {
+  uploadImage,
+  deleteImage,
+  getOptimized,
+} = require("../utils/cloudinaryUtil");
 
 exports.getAllPosts = async (req, res, next) => {
   try {
@@ -68,14 +72,16 @@ exports.createPost = [
       let imageName;
       if (req.file) {
         const data = await uploadImage(req.file.buffer, req.body.imageName);
-        imageName = data.secure_url;
+        imageName = getOptimized(data.secure_url);
       }
+
       const post = new Post({
         content: req.body.content,
         image: imageName,
         author: req.user._id,
       });
       const savedPost = await post.save();
+
       return res.json({
         post: savedPost,
         success: "Post created successfully. ",
