@@ -9,7 +9,6 @@ const {
   uploadImage,
   deleteImage,
   getResizedAndOptimized,
-  getOptimized,
 } = require("../utils/cloudinaryUtil");
 
 function makeErrorObject(errorArray) {

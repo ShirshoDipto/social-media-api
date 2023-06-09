@@ -49,7 +49,7 @@ exports.getResizedAndOptimized = (imageName, w, h) => {
 
 exports.getOptimized = (imageName) => {
   const urlArray = imageName.split("/");
-  urlArray.splice(urlArray.length - 2, 0, "w_1000/f_auto,q_auto");
+  urlArray.splice(urlArray.length - 2, 0, "w_1000,f_auto,q_auto");
   const newImageUrl = urlArray.join("/");
   return newImageUrl;
 };
