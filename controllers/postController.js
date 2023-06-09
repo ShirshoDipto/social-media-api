@@ -72,8 +72,8 @@ exports.createPost = [
       let imageName;
       if (req.file) {
         const data = await uploadImage(req.file.buffer, req.body.imageName);
-        // imageName = getOptimized(data.secure_url);
-        imageName = data.secure_url;
+        imageName = getOptimized(data.secure_url);
+        // imageName = data.secure_url;
       }
 
       const post = new Post({
